@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Crudo Emu - GB / GBC / GBA</title>
+<style>
+* { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+:root { --gb-body: #c4cfa1; }
+html, body { height: 100%; }
+body { background-color:#111; margin:0; padding:0; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:'Courier New', monospace; overflow:hidden; }
+
+/* ---------- GUSCIO CONSOLE (dal layout di Crudo Football) ---------- */
+#phone-screen { width:100vw; max-width:420px; height:100vh; max-height:900px; background-color:var(--gb-body); display:flex; flex-direction:column; border:2px solid #2a2a2a; border-radius:26px 26px 44px 44px; box-shadow:0 0 30px rgba(0,0,0,0.9), inset 0 0 8px rgba(255,255,255,0.15); overflow:hidden; position:relative; }
+#screen-container { flex:0 0 46%; background-color:#222; display:flex; justify-content:center; align-items:center; padding:12px; position:relative; }
+#game-wrapper { position:relative; width:320px; height:320px; max-width:100%; aspect-ratio:1/1; margin:0 auto; border:4px solid #111; border-radius:8px; background-color:#000; box-shadow:inset 0 0 12px rgba(0,0,0,0.7); overflow:hidden; }
+
+/* EmulatorJS inietta il suo canvas dentro #game qui sotto. Lo forziamo a riempire il wrapper. */
+#game { width:100%; height:100%; }
+#game canvas, canvas { display:block !important; width:100% !important; height:100% !important; image-rendering:pixelated; border-radius:4px; background:#000; }
+
+/* Overlay iniziale: caricamento ROM */
+#loader { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:14px; background:#0d1a0d; color:#c4cfa1; text-align:center; padding:16px; z-index:20; }
+#loader h1 { margin:0; font-size:18px; letter-spacing:2px; color:#8bac0f; }
+#loader p { margin:0; font-size:11px; line-height:1.5; color:#9bbc0f; max-width:260px; }
+.load-btn { background:linear-gradient(145deg,#8bac0f,#306230); color:#0f380f; font-weight:bold; font-family:inherit; font-size:13px; padding:12px 18px; border:none; border-radius:8px; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.3), 0 3px 6px rgba(0,0,0,0.5); cursor:pointer; }
+.load-btn:active { transform:translateY(2px); }
+#rom-input { display:none; }
+#status { font-size:10px; color:#6b8f2f; min-height:14px; }
+
+/* Barra di stato in alto (nome gioco, piattaforma) */
+#topbar { position:absolute; top:0; left:0; right:0; height:20px; background:rgba(0,0,0,0.55); color:#c4cfa1; font-size:9px; display:flex; align-items:center; justify-content:space-between; padding:0 8px; z-index:15; pointer-events:none; }
+#topbar .plat { color:#8bac0f; font-weight:bold; }
+
+/* ---------- CONTROLLER (identico a Crudo Football) ---------- */
+#controller { flex:1; background-color:var(--gb-body); display:flex; flex-direction:column; justify-content:space-between; padding:30px 18px 40px; border-top:4px solid #555; }
+.controls-top { display:flex; justify-content:space-between; align-items:flex-start; width:100%; padding:0 4px; }
+.dpad { position:relative; width:190px; height:190px; flex-shrink:0; border-radius:50%; background:radial-gradient(circle at 42% 38%, #2c2c2c, #0c0c0c 78%); box-shadow:0 6px 10px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.08), inset -3px -3px 8px rgba(0,0,0,0.9); touch-action:none; -webkit-tap-highlight-color:transparent; cursor:pointer; }
+.dpad::before, .dpad::after { content:""; position:absolute; background:linear-gradient(145deg, #3a3a3a, #161616); box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), inset -1px -1px 3px rgba(0,0,0,0.8); border-radius:11px; }
+.dpad::before { top:26px; bottom:26px; left:50%; width:52px; transform:translateX(-50%); }
+.dpad::after { left:26px; right:26px; top:50%; height:52px; transform:translateY(-50%); }
+.dpad.active { box-shadow:0 4px 6px rgba(0,0,0,0.5), inset 3px 3px 6px rgba(0,0,0,0.9); }
+.dpad-glow { position:absolute; width:66px; height:66px; left:50%; top:50%; margin-left:-33px; margin-top:-33px; border-radius:50%; background:radial-gradient(circle, rgba(120,205,255,0.55) 0%, rgba(90,150,220,0.28) 45%, rgba(0,0,0,0) 72%); box-shadow:0 0 14px rgba(120,205,255,0.5), inset 0 0 8px rgba(0,0,0,0.6); pointer-events:none; opacity:0; transition:opacity 0.08s ease, transform 0.06s ease; z-index:5; }
+.dpad.active .dpad-glow { opacity:1; }
+.action-buttons { position:relative; width:150px; height:200px; flex-shrink:0; margin-right:60px; filter:drop-shadow(3px 6px 5px rgba(0,0,0,0.3)); }
+.btn-round-container { position:absolute; text-align:center; }
+.btn-b-container { left:4px; top:120px; }
+.btn-a-container { left:64px; top:40px; }
+.btn-round { width:74px; height:74px; background:linear-gradient(145deg, #a72352, #6e1333); border-radius:50%; border:none; color:white; font-weight:bold; font-size:25px; cursor:pointer; box-shadow:inset 1px 2px 3px rgba(255,255,255,0.3), inset -2px -2px 5px rgba(0,0,0,0.6); transition:transform 0.05s ease; touch-action:none; -webkit-tap-highlight-color:transparent; }
+.btn-round:active, .btn-round.active { transform:translate(2px,3px); box-shadow:inset 2px 2px 7px rgba(0,0,0,0.8); background:#5b0f2a; }
+.controls-bottom { display:flex; justify-content:center; gap:45px; margin-top:0; margin-bottom:40px; }
+.btn-pill-container { text-align:center; transform:rotate(-25deg); filter:drop-shadow(2px 4px 3px rgba(0,0,0,0.3)); }
+.btn-pill { width:88px; height:23px; background:linear-gradient(145deg, #6e6e6e, #333); border-radius:12px; border:none; cursor:pointer; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.2), inset -1px -1px 3px rgba(0,0,0,0.7); touch-action:none; -webkit-tap-highlight-color:transparent; }
+.btn-pill:active, .btn-pill.active { transform:translate(1px,2px); background:#222; box-shadow:inset 1px 1px 4px rgba(0,0,0,0.9); }
+.btn-pill-label { font-size:12px; color:#306230; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:1px; }
+
+/* ---------- Pulsanti di sistema (menu/salvataggi) ---------- */
+#sysbar { display:flex; justify-content:center; gap:10px; margin-top:-24px; margin-bottom:6px; }
+.sys-btn { background:#3a3a3a; color:#c4cfa1; font-family:inherit; font-size:9px; font-weight:bold; letter-spacing:1px; border:none; border-radius:6px; padding:6px 10px; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.5); cursor:pointer; }
+.sys-btn:active { transform:translateY(1px); background:#222; }
+.sys-btn:disabled { opacity:0.4; }
+</style>
+</head>
+<body>
+<div id="phone-screen">
+  <div id="screen-container">
+    <div id="game-wrapper">
+      <div id="topbar"><span id="tb-name">—</span><span class="plat" id="tb-plat"></span></div>
+      <!-- Contenitore dove EmulatorJS crea il suo canvas -->
+      <div id="game"></div>
+      <!-- Overlay iniziale per il caricamento della ROM -->
+      <div id="loader">
+        <h1>CRUDO EMU</h1>
+        <p>Carica un ROM del tuo Game Boy, Game Boy Color o Game Boy Advance (file .gb / .gbc / .gba) che possiedi legalmente.</p>
+        <button class="load-btn" id="pick-rom">CARICA ROM</button>
+        <input type="file" id="rom-input" accept=".gb,.gbc,.gba,.zip">
+        <div id="status"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="controller">
+    <div id="sysbar">
+      <button class="sys-btn" id="btn-menu" disabled>MENU</button>
+      <button class="sys-btn" id="btn-save" disabled>SALVA</button>
+      <button class="sys-btn" id="btn-load" disabled>CARICA</button>
+      <button class="sys-btn" id="btn-full" disabled>FULLSCREEN</button>
+      <button class="sys-btn" id="btn-eject" disabled>EJECT</button>
+    </div>
+    <div class="controls-top">
+      <div class="dpad" id="dpad">
+        <div class="dpad-glow" id="dpad-glow"></div>
+      </div>
+      <div class="action-buttons">
+        <div class="btn-round-container btn-b-container"><button class="btn-round" id="btn-b">B</button></div>
+        <div class="btn-round-container btn-a-container"><button class="btn-round" id="btn-a">A</button></div>
+      </div>
+    </div>
+    <div class="controls-bottom">
+      <div class="btn-pill-container"><button class="btn-pill" id="btn-select"></button><div class="btn-pill-label">SELECT</div></div>
+      <div class="btn-pill-container"><button class="btn-pill" id="btn-start"></button><div class="btn-pill-label">START</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   CRUDO EMU — guscio console + EmulatorJS (core mGBA/gambatte via CDN)
+   - Riusa il guscio Game Boy di Crudo Football
+   - Carica ROM .gb/.gbc/.gba dal telefono
+   - Mappa D-pad / A / B / Start / Select agli input dell'emulatore
+   - Salvataggi (save state + battery), fullscreen mobile, autodetect piattaforma
+   ========================================================================= */
+
+/* ---- Riferimenti UI ---- */
+const romInput  = document.getElementById("rom-input");
+const pickBtn   = document.getElementById("pick-rom");
+const loader    = document.getElementById("loader");
+const statusEl  = document.getElementById("status");
+const tbName    = document.getElementById("tb-name");
+const tbPlat    = document.getElementById("tb-plat");
+const btnMenu   = document.getElementById("btn-menu");
+const btnSave   = document.getElementById("btn-save");
+const btnLoad   = document.getElementById("btn-load");
+const btnFull   = document.getElementById("btn-full");
+const btnEject  = document.getElementById("btn-eject");
+
+/* ---- Config CDN EmulatorJS ---- */
+const EJS_CDN = "https://cdn.jsdelivr.net/npm/@emulatorjs/emulatorjs@latest/data/";
+
+/* ---- Stato ---- */
+let romLoaded = false;
+let currentPlatform = null; // "gb" | "gba"
+
+/* Autodetect della piattaforma dal nome file / estensione.
+   EmulatorJS usa "gb" per Game Boy e Game Boy Color (core gambatte),
+   e "gba" per Game Boy Advance (core mGBA). */
+function detectCore(fileName){
+  const n = fileName.toLowerCase();
+  if(n.endsWith(".gba")) return { core:"gba", label:"GAME BOY ADVANCE" };
+  if(n.endsWith(".gbc")) return { core:"gb",  label:"GAME BOY COLOR" };
+  if(n.endsWith(".gb"))  return { core:"gb",  label:"GAME BOY" };
+  // zip o sconosciuto: proviamo con gba come default più capiente; l'utente può ri-caricare
+  return { core:"gba", label:"ROM" };
+}
+
+function setStatus(msg){ statusEl.textContent = msg || ""; }
+
+/* ---- Avvio emulatore con la ROM scelta ---- */
+function startEmulator(file){
+  const det = detectCore(file.name);
+  currentPlatform = det.core;
+  const romURL = URL.createObjectURL(file);
+
+  tbName.textContent = file.name.replace(/\.(gb|gbc|gba|zip)$/i, "").slice(0, 22);
+  tbPlat.textContent = det.label;
+
+  // Variabili di configurazione lette da EmulatorJS al caricamento dello script loader.
+  window.EJS_player   = "#game";
+  window.EJS_core     = det.core;         // "gb" o "gba"
+  window.EJS_gameUrl  = romURL;
+  window.EJS_pathtodata = EJS_CDN;        // core wasm caricati da CDN
+  window.EJS_startOnLoaded = true;
+  window.EJS_gameName = file.name;
+  // Nascondiamo i controlli virtuali di EmulatorJS: usiamo i NOSTRI pulsanti.
+  window.EJS_Buttons = {
+    playPause:false, restart:false, mute:false, settings:true,
+    fullscreen:false, saveState:true, loadState:true,
+    screenRecord:false, gamepad:false, cheat:false,
+    volume:false, saveSavFiles:true, loadSavFiles:true,
+    quickSave:true, quickLoad:true, screenshot:false, cacheManager:false
+  };
+  window.EJS_onGameStart = onGameStart;
+
+  // Iniettiamo lo script loader di EmulatorJS (dalla CDN).
+  const s = document.createElement("script");
+  s.src = EJS_CDN + "loader.js";
+  s.onerror = function(){
+    setStatus("Impossibile caricare il core dalla rete. Verifica la connessione o usa i core in locale.");
+  };
+  document.body.appendChild(s);
+  setStatus("Avvio emulatore… (scaricamento core " + det.label + ")");
+}
+
+/* ---- Quando il gioco è partito: abilita pulsanti e nascondi loader ---- */
+function onGameStart(){
+  romLoaded = true;
+  loader.style.display = "none";
+  [btnMenu, btnSave, btnLoad, btnFull, btnEject].forEach(b => b.disabled = false);
+  setStatus("");
+  // Sincronizza la dimensione del canvas al wrapper.
+  setTimeout(resizeCanvas, 100);
+}
+
+/* ---- Caricamento file ROM ---- */
+pickBtn.addEventListener("click", () => romInput.click());
+romInput.addEventListener("change", (e) => {
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  setStatus("ROM selezionata: " + file.name);
+  startEmulator(file);
+});
+
+/* =========================================================================
+   BINDING DEI PULSANTI DELLA CONSOLE AGLI INPUT DELL'EMULATORE
+   EmulatorJS espone EJS_emulator.gameManager.functions per premere/rilasciare
+   i tasti. In alternativa simuliamo eventi tastiera che il core intercetta.
+   Usiamo la mappa tasti standard di EmulatorJS:
+     Up/Down/Left/Right, A=X, B=Z, Start=Enter, Select=Shift(destro).
+   Per robustezza inviamo eventi KeyboardEvent al document.
+   ========================================================================= */
+const KEYMAP = {
+  up:    { key:"ArrowUp",    code:"ArrowUp",    keyCode:38 },
+  down:  { key:"ArrowDown",  code:"ArrowDown",  keyCode:40 },
+  left:  { key:"ArrowLeft",  code:"ArrowLeft",  keyCode:37 },
+  right: { key:"ArrowRight", code:"ArrowRight", keyCode:39 },
+  a:     { key:"x",          code:"KeyX",       keyCode:88 },
+  b:     { key:"z",          code:"KeyZ",       keyCode:90 },
+  start: { key:"Enter",      code:"Enter",      keyCode:13 },
+  select:{ key:"Shift",      code:"ShiftRight", keyCode:16, location:2 }
+};
+
+function dispatchKey(type, def){
+  const ev = new KeyboardEvent(type, {
+    key: def.key, code: def.code, keyCode: def.keyCode, which: def.keyCode,
+    location: def.location || 0, bubbles: true, cancelable: true
+  });
+  // Alcuni browser ignorano keyCode se non forzato: lo re-definiamo.
+  try { Object.defineProperty(ev, "keyCode", { get: () => def.keyCode }); } catch(e){}
+  try { Object.defineProperty(ev, "which",  { get: () => def.keyCode }); } catch(e){}
+  document.dispatchEvent(ev);
+  // Inoltra anche al canvas dell'emulatore, se presente.
+  const cv = document.querySelector("#game canvas");
+  if(cv) cv.dispatchEvent(ev);
+}
+
+function pressBtn(name){ if(KEYMAP[name]) dispatchKey("keydown", KEYMAP[name]); }
+function releaseBtn(name){ if(KEYMAP[name]) dispatchKey("keyup", KEYMAP[name]); }
+
+/* ---- Bind pulsanti tondi/pillola (A, B, Start, Select) ---- */
+function bindButton(id, name){
+  const btn = document.getElementById(id);
+  if(!btn) return;
+  function onPress(e){ if(e && e.cancelable) e.preventDefault(); btn.classList.add("active"); pressBtn(name); }
+  function onRelease(e){ if(e && e.cancelable) e.preventDefault(); btn.classList.remove("active"); releaseBtn(name); }
+  btn.addEventListener("touchstart", onPress,  { passive:false });
+  btn.addEventListener("touchend",   onRelease,{ passive:false });
+  btn.addEventListener("touchcancel",onRelease,{ passive:false });
+  btn.addEventListener("mousedown",  onPress);
+  btn.addEventListener("mouseup",    onRelease);
+  btn.addEventListener("mouseleave", onRelease);
+}
+bindButton("btn-a", "a");
+bindButton("btn-b", "b");
+bindButton("btn-select", "select");
+bindButton("btn-start", "start");
+
+/* ---- Bind D-pad analogico (a 8 direzioni, come in Crudo Football) ---- */
+(function bindDpad(){
+  const dpad = document.getElementById("dpad");
+  if(!dpad) return;
+  const glow = document.getElementById("dpad-glow");
+  let activeDir = { up:false, down:false, left:false, right:false };
+
+  function moveGlow(d){
+    if(!glow) return;
+    let gx=0, gy=0;
+    if(d.left) gx-=1; if(d.right) gx+=1; if(d.up) gy-=1; if(d.down) gy+=1;
+    const len = Math.hypot(gx,gy);
+    if(len>0){ gx/=len; gy/=len; const R=52; glow.style.transform = "translate("+(gx*R)+"px,"+(gy*R)+"px)"; }
+    else glow.style.transform = "translate(0,0)";
+  }
+  function computeDir(cX, cY){
+    const rect = dpad.getBoundingClientRect();
+    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    const dx = cX-cx, dy = cY-cy;
+    const dist = Math.hypot(dx,dy);
+    const res = { up:false, down:false, left:false, right:false };
+    if(dist < rect.width*0.12) return res; // zona morta centrale
+    let ang = Math.atan2(dy,dx)*180/Math.PI; if(ang<0) ang+=360;
+    const sector = Math.round(ang/45)%8;
+    switch(sector){
+      case 0: res.right=true; break;
+      case 1: res.right=true; res.down=true; break;
+      case 2: res.down=true; break;
+      case 3: res.down=true; res.left=true; break;
+      case 4: res.left=true; break;
+      case 5: res.left=true; res.up=true; break;
+      case 6: res.up=true; break;
+      case 7: res.up=true; res.right=true; break;
+    }
+    return res;
+  }
+  function applyDir(cX, cY){
+    const d = computeDir(cX, cY);
+    ["up","down","left","right"].forEach(function(k){
+      if(d[k] && !activeDir[k]) pressBtn(k);
+      if(!d[k] && activeDir[k]) releaseBtn(k);
+    });
+    activeDir = d;
+    moveGlow(d);
+  }
+  function clearDirs(){
+    ["up","down","left","right"].forEach(function(k){ if(activeDir[k]) releaseBtn(k); });
+    activeDir = { up:false, down:false, left:false, right:false };
+    moveGlow(activeDir);
+  }
+  function onDown(e){ if(e && e.cancelable) e.preventDefault(); dpad.classList.add("active"); const pt=(e.touches&&e.touches[0])||e; applyDir(pt.clientX, pt.clientY); }
+  function onMove(e){ if(!dpad.classList.contains("active")) return; if(e && e.cancelable) e.preventDefault(); const pt=(e.touches&&e.touches[0])||e; applyDir(pt.clientX, pt.clientY); }
+  function onUp(e){ if(e && e.cancelable) e.preventDefault(); dpad.classList.remove("active"); clearDirs(); }
+  dpad.addEventListener("touchstart", onDown, { passive:false });
+  dpad.addEventListener("touchmove",  onMove, { passive:false });
+  dpad.addEventListener("touchend",   onUp,   { passive:false });
+  dpad.addEventListener("touchcancel",onUp,   { passive:false });
+  dpad.addEventListener("mousedown",  onDown);
+  dpad.addEventListener("mousemove",  onMove);
+  dpad.addEventListener("mouseup",    onUp);
+  dpad.addEventListener("mouseleave", onUp);
+})();
+
+/* =========================================================================
+   PULSANTI DI SISTEMA: menu, salva/carica stato, fullscreen, eject
+   Usiamo l'API di EmulatorJS quando disponibile (window.EJS_emulator).
+   ========================================================================= */
+function ejs(){ return window.EJS_emulator || null; }
+
+btnMenu.addEventListener("click", function(){
+  const e = ejs(); if(!e) return;
+  // Apre il menu impostazioni di EmulatorJS (velocità, shader, ecc.)
+  if(e.menu && e.menu.open) e.menu.open();
+  else if(typeof e.toggleMenu === "function") e.toggleMenu();
+});
+
+btnSave.addEventListener("click", async function(){
+  const e = ejs(); if(!e) return;
+  try{
+    // save state in memoria + persistenza su localStorage per il gioco corrente
+    const state = await e.gameManager.getState();
+    const key = "crudoemu_state_" + (window.EJS_gameName||"rom");
+    // convertiamo in base64 per salvarlo come stringa
+    let bin=""; const bytes=new Uint8Array(state);
+    for(let i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]);
+    localStorage.setItem(key, btoa(bin));
+    // salviamo anche la battery/SRAM (progressi del gioco) se disponibile
+    if(e.gameManager.getSaveFile){
+      const sav = e.gameManager.getSaveFile();
+      if(sav){ let sb=""; const sbytes=new Uint8Array(sav); for(let i=0;i<sbytes.length;i++) sb+=String.fromCharCode(sbytes[i]); localStorage.setItem(key+"_sav", btoa(sb)); }
+    }
+    flashStatusOnScreen("SALVATO");
+  }catch(err){ console.error(err); flashStatusOnScreen("ERRORE SALVATAGGIO"); }
+});
+
+btnLoad.addEventListener("click", async function(){
+  const e = ejs(); if(!e) return;
+  try{
+    const key = "crudoemu_state_" + (window.EJS_gameName||"rom");
+    const b64 = localStorage.getItem(key);
+    if(!b64){ flashStatusOnScreen("NESSUN SALVATAGGIO"); return; }
+    const bin = atob(b64); const bytes = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+    await e.gameManager.loadState(bytes);
+    flashStatusOnScreen("CARICATO");
+  }catch(err){ console.error(err); flashStatusOnScreen("ERRORE CARICAMENTO"); }
+});
+
+btnFull.addEventListener("click", function(){
+  const wrap = document.getElementById("game-wrapper");
+  const target = document.querySelector("#game canvas") || wrap;
+  const req = target.requestFullscreen || target.webkitRequestFullscreen || target.webkitEnterFullscreen;
+  if(document.fullscreenElement){
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  } else if(req){
+    req.call(target);
+  }
+});
+
+btnEject.addEventListener("click", function(){
+  // Ricarica la pagina per tornare alla schermata di caricamento ROM.
+  if(confirm("Estrarre la cartuccia e tornare alla schermata di caricamento?")){
+    location.reload();
+  }
+});
+
+/* Messaggio breve a schermo (in topbar) */
+let flashTimer = null;
+function flashStatusOnScreen(msg){
+  const prev = tbPlat.textContent;
+  tbPlat.textContent = msg;
+  if(flashTimer) clearTimeout(flashTimer);
+  flashTimer = setTimeout(()=>{ tbPlat.textContent = prev; }, 1200);
+}
+
+/* =========================================================================
+   RIDIMENSIONAMENTO CANVAS: forziamo il canvas dell'emulatore a riempire
+   il wrapper mantenendo il rendering pixelato.
+   ========================================================================= */
+function resizeCanvas(){
+  const cv = document.querySelector("#game canvas");
+  if(!cv) return;
+  cv.style.width = "100%";
+  cv.style.height = "100%";
+  cv.style.imageRendering = "pixelated";
+}
+window.addEventListener("resize", resizeCanvas);
+document.addEventListener("fullscreenchange", resizeCanvas);
+
+/* Impedisce lo scroll/zoom da gesture su mobile durante il gioco */
+document.addEventListener("touchmove", function(e){ if(romLoaded && e.cancelable) e.preventDefault(); }, { passive:false });
+document.addEventListener("gesturestart", function(e){ e.preventDefault(); });
+</script>
+</body>
+</html>
