@@ -24,12 +24,10 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 .load-btn:active { transform:translateY(2px); }
 #rom-input { display:none; }
 #status { font-size:10px; color:#6b8f2f; min-height:14px; }
+#sab-warn { font-size:9px; color:#f2c11e; max-width:280px; line-height:1.4; }
 
-/* Pannello diagnostico a schermo (log) */
 #diag { position:absolute; left:0; right:0; bottom:0; max-height:42%; overflow-y:auto; background:rgba(0,0,0,0.85); color:#7CFC00; font-size:9px; line-height:1.35; padding:6px 8px; z-index:30; display:none; text-align:left; white-space:pre-wrap; word-break:break-word; }
-#diag .err { color:#ff6b6b; }
-#diag .ok  { color:#8bac0f; }
-#diag .warn{ color:#f2c11e; }
+#diag .err { color:#ff6b6b; } #diag .ok { color:#8bac0f; } #diag .warn{ color:#f2c11e; }
 
 #topbar { position:absolute; top:0; left:0; right:0; height:20px; background:rgba(0,0,0,0.55); color:#c4cfa1; font-size:9px; display:flex; align-items:center; justify-content:space-between; padding:0 8px; z-index:15; pointer-events:none; }
 #topbar .plat { color:#8bac0f; font-weight:bold; }
@@ -55,18 +53,33 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 .btn-pill:active, .btn-pill.active { transform:translate(1px,2px); background:#222; box-shadow:inset 1px 1px 4px rgba(0,0,0,0.9); }
 .btn-pill-label { font-size:12px; color:#306230; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:1px; }
 
-#sysbar { display:flex; justify-content:center; gap:8px; margin-top:-24px; margin-bottom:6px; flex-wrap:wrap; }
-.sys-btn { background:#3a3a3a; color:#c4cfa1; font-family:inherit; font-size:9px; font-weight:bold; letter-spacing:1px; border:none; border-radius:6px; padding:6px 9px; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.5); cursor:pointer; }
+/* Barra pulsanti di sistema (senza il cambio colore, ora in un menu) */
+#sysbar { display:flex; justify-content:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.sys-btn { background:#3a3a3a; color:#c4cfa1; font-family:inherit; font-size:9px; font-weight:bold; letter-spacing:1px; border:none; border-radius:6px; padding:7px 10px; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.5); cursor:pointer; }
 .sys-btn:active { transform:translateY(1px); background:#222; }
 .sys-btn:disabled { opacity:0.4; }
 
-#color-bar { display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
-#color-bar .label { font-size:9px; font-weight:bold; letter-spacing:1px; color:#2a2a2a; }
-.swatch { width:22px; height:22px; border-radius:50%; border:2px solid rgba(0,0,0,0.45); cursor:pointer; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.4), 0 2px 3px rgba(0,0,0,0.4); transition:transform 0.08s ease; }
+/* ---------- MODALE MENU (con sotto-voce Colore) ---------- */
+#menu-modal { position:absolute; inset:0; background:rgba(0,0,0,0.75); z-index:40; display:none; justify-content:center; align-items:center; }
+#menu-modal.open { display:flex; }
+.menu-panel { background:#1a1f18; border:2px solid #8bac0f; border-radius:12px; width:86%; max-width:340px; max-height:80%; overflow-y:auto; padding:16px; color:#c4cfa1; box-shadow:0 8px 30px rgba(0,0,0,0.7); }
+.menu-panel h2 { margin:0 0 10px; font-size:15px; color:#8bac0f; text-align:center; letter-spacing:1px; }
+.menu-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 6px; border-bottom:1px solid #2a3324; }
+.menu-row:last-child { border-bottom:none; }
+.menu-row span { font-size:12px; font-weight:bold; }
+.menu-act { background:#306230; color:#e8f0d0; border:none; border-radius:6px; font-family:inherit; font-size:11px; font-weight:bold; padding:8px 12px; cursor:pointer; }
+.menu-act:active { transform:translateY(1px); }
+.menu-close { display:block; width:100%; margin-top:12px; background:#5b1030; color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:bold; padding:11px; cursor:pointer; }
+
+/* Griglia colori dentro il sottomenu */
+#color-grid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; padding:8px 0 4px; }
+.swatch { width:30px; height:30px; border-radius:50%; border:2px solid rgba(255,255,255,0.35); cursor:pointer; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.4), 0 2px 3px rgba(0,0,0,0.4); transition:transform 0.08s ease; }
 .swatch:active { transform:scale(0.9); }
-.swatch.selected { border-color:#fff; box-shadow:0 0 0 2px #00e5ff, inset 1px 1px 2px rgba(255,255,255,0.4); }
-.swatch.custom { display:flex; align-items:center; justify-content:center; font-size:13px; color:#fff; background:conic-gradient(#d81e2c,#f2c11e,#2fa845,#1b6ec2,#7a3bd0,#d81e2c); }
+.swatch.selected { border-color:#fff; box-shadow:0 0 0 3px #00e5ff, inset 1px 1px 2px rgba(255,255,255,0.4); }
+.swatch.custom { display:flex; align-items:center; justify-content:center; font-size:16px; color:#fff; background:conic-gradient(#d81e2c,#f2c11e,#2fa845,#1b6ec2,#7a3bd0,#d81e2c); }
 #custom-color { display:none; }
+.submenu { display:none; }
+.submenu.open { display:block; }
 </style>
 </head>
 <body>
@@ -81,22 +94,18 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
         <button class="load-btn" id="pick-rom">CARICA ROM</button>
         <input type="file" id="rom-input" accept=".gb,.gbc,.gba,.zip">
         <div id="status"></div>
+        <div id="sab-warn"></div>
       </div>
       <div id="diag"></div>
     </div>
   </div>
 
   <div id="controller">
-    <div id="color-bar">
-      <span class="label">COLORE:</span>
-      <input type="color" id="custom-color" value="#c4cfa1">
-    </div>
     <div id="sysbar">
-      <button class="sys-btn" id="btn-menu" disabled>MENU</button>
+      <button class="sys-btn" id="btn-menu">MENU</button>
       <button class="sys-btn" id="btn-save" disabled>SALVA</button>
       <button class="sys-btn" id="btn-load" disabled>CARICA</button>
       <button class="sys-btn" id="btn-full" disabled>FULLSCREEN</button>
-      <button class="sys-btn" id="btn-diag">LOG</button>
     </div>
     <div class="controls-top">
       <div class="dpad" id="dpad">
@@ -112,179 +121,196 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
       <div class="btn-pill-container"><button class="btn-pill" id="btn-start"></button><div class="btn-pill-label">START</div></div>
     </div>
   </div>
+
+  <!-- MODALE MENU con sottomenu Colore -->
+  <div id="menu-modal">
+    <div class="menu-panel">
+      <h2>MENU</h2>
+      <div id="menu-main">
+        <div class="menu-row"><span>Cambia colore scocca</span><button class="menu-act" id="open-color">COLORE ▸</button></div>
+        <div class="menu-row"><span>Menu emulatore (impostazioni)</span><button class="menu-act" id="open-ejs">APRI</button></div>
+        <div class="menu-row"><span>Log diagnostico</span><button class="menu-act" id="open-log">LOG</button></div>
+        <button class="menu-close" id="close-menu">CHIUDI</button>
+      </div>
+      <div id="menu-color" class="submenu">
+        <div class="menu-row"><span>Colore scocca</span><button class="menu-act" id="back-color">◂ INDIETRO</button></div>
+        <div id="color-grid">
+          <input type="color" id="custom-color" value="#c4cfa1">
+        </div>
+        <button class="menu-close" id="close-menu2">CHIUDI</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
 "use strict";
 /* =========================================================================
-   CrudoGB's Emul — VERSIONE DIAGNOSTICA
-   Mostra a schermo ogni passo del caricamento del core, così vediamo
-   esattamente DOVE si blocca (senza console sviluppatore sul telefono).
+   CrudoGB's Emul — v3
+   FIX principali rispetto alla v2:
+   1) SharedArrayBuffer / COOP-COEP via service worker (necessario per il core
+      GBA su host statici come GitHub Pages che NON inviano quegli header).
+   2) Cambio colore spostato in un SOTTOMENU del MENU (niente sovrapposizioni).
+   3) Binding input più robusto: usa l'API diretta di EmulatorJS quando c'è,
+      con fallback su eventi tastiera.
    ========================================================================= */
+
+/* ============ 0) COOP/COEP via Service Worker ============
+   Il core GBA (mGBA) usa SharedArrayBuffer, che il browser abilita SOLO se la
+   pagina è "cross-origin isolated". GitHub Pages non manda gli header COOP/COEP,
+   quindi li iniettiamo con un service worker (tecnica "coi-serviceworker").
+   Se non siamo già isolati, registriamo il SW e ricarichiamo una volta. */
+(function coiServiceWorker(){
+  if (window.crossOriginIsolated) return; // già isolati: nulla da fare
+  if (!window.isSecureContext) return;    // serve HTTPS
+  if (!('serviceWorker' in navigator)) return;
+
+  const swCode = `
+    self.addEventListener("install", () => self.skipWaiting());
+    self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+    self.addEventListener("fetch", function(e){
+      if (e.request.cache === "only-if-cached" && e.request.mode !== "same-origin") return;
+      e.respondWith(fetch(e.request).then(function(res){
+        if (res.status === 0) return res;
+        const h = new Headers(res.headers);
+        h.set("Cross-Origin-Embedder-Policy", "require-corp");
+        h.set("Cross-Origin-Opener-Policy", "same-origin");
+        return new Response(res.body, { status:res.status, statusText:res.statusText, headers:h });
+      }).catch(function(err){ console.error(err); }));
+    });
+  `;
+  const blob = new Blob([swCode], { type: "text/javascript" });
+  const url = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(url).then(function(reg){
+    // se il SW è nuovo (non controlla ancora la pagina) ricarichiamo per applicare gli header
+    if (!navigator.serviceWorker.controller) {
+      reg.addEventListener("updatefound", function(){
+        const sw = reg.installing;
+        sw && sw.addEventListener("statechange", function(){
+          if (sw.state === "activated") window.location.reload();
+        });
+      });
+      // fallback: piccola attesa poi reload se serve
+      setTimeout(function(){ if (!window.crossOriginIsolated && navigator.serviceWorker.controller) window.location.reload(); }, 800);
+    }
+  }).catch(function(e){ console.error("SW register fail", e); });
+})();
 
 /* ============ LOG A SCHERMO ============ */
 const diagEl = document.getElementById("diag");
-function log(msg, cls){
-  const line = document.createElement("div");
-  if(cls) line.className = cls;
-  const ts = new Date().toLocaleTimeString();
-  line.textContent = "[" + ts + "] " + msg;
-  diagEl.appendChild(line);
-  diagEl.scrollTop = diagEl.scrollHeight;
-}
-function showDiag(){ diagEl.style.display = "block"; }
-// Cattura QUALSIASI errore JS e lo mostra a schermo
-window.addEventListener("error", function(e){
-  showDiag();
-  log("ERRORE JS: " + (e.message || e.type) + (e.filename ? " @ " + e.filename + ":" + e.lineno : ""), "err");
-});
-window.addEventListener("unhandledrejection", function(e){
-  showDiag();
-  log("PROMISE RIFIUTATA: " + (e.reason && e.reason.message ? e.reason.message : e.reason), "err");
-});
-document.getElementById("btn-diag").addEventListener("click", function(){
-  diagEl.style.display = (diagEl.style.display === "block") ? "none" : "block";
-});
-
-log("Pagina caricata. In attesa di ROM.", "ok");
+function log(msg, cls){ const l=document.createElement("div"); if(cls)l.className=cls; l.textContent="["+new Date().toLocaleTimeString()+"] "+msg; diagEl.appendChild(l); diagEl.scrollTop=diagEl.scrollHeight; }
+function showDiag(){ diagEl.style.display="block"; }
+window.addEventListener("error", function(e){ showDiag(); log("ERRORE JS: "+(e.message||e.type)+(e.filename?" @ "+e.filename+":"+e.lineno:""),"err"); });
+window.addEventListener("unhandledrejection", function(e){ showDiag(); log("PROMISE RIFIUTATA: "+(e.reason&&e.reason.message?e.reason.message:e.reason),"err"); });
+log("Pagina caricata.", "ok");
+log("crossOriginIsolated = " + window.crossOriginIsolated, window.crossOriginIsolated ? "ok" : "warn");
 
 /* ---- Riferimenti UI ---- */
-const romInput  = document.getElementById("rom-input");
-const pickBtn   = document.getElementById("pick-rom");
-const loader    = document.getElementById("loader");
-const statusEl  = document.getElementById("status");
-const tbName    = document.getElementById("tb-name");
-const tbPlat    = document.getElementById("tb-plat");
-const btnMenu   = document.getElementById("btn-menu");
-const btnSave   = document.getElementById("btn-save");
-const btnLoad   = document.getElementById("btn-load");
-const btnFull   = document.getElementById("btn-full");
-const colorBar  = document.getElementById("color-bar");
-const customColor = document.getElementById("custom-color");
+const romInput=document.getElementById("rom-input"), pickBtn=document.getElementById("pick-rom"),
+  loader=document.getElementById("loader"), statusEl=document.getElementById("status"),
+  sabWarn=document.getElementById("sab-warn"), tbName=document.getElementById("tb-name"),
+  tbPlat=document.getElementById("tb-plat"), btnMenu=document.getElementById("btn-menu"),
+  btnSave=document.getElementById("btn-save"), btnLoad=document.getElementById("btn-load"),
+  btnFull=document.getElementById("btn-full"), customColor=document.getElementById("custom-color"),
+  colorGrid=document.getElementById("color-grid"), menuModal=document.getElementById("menu-modal");
 
-/* ============ COLORE SCOCCA ============ */
-const COLOR_KEY = "crudogb_shell_color";
-const SHELL_COLORS = [
-  { name:"Verde GB", c:"#c4cfa1" }, { name:"Grigio", c:"#b8b8bd" },
-  { name:"Rosso", c:"#d24b4b" }, { name:"Blu", c:"#4b7bd2" },
-  { name:"Giallo", c:"#e8c542" }, { name:"Viola", c:"#9b6bd2" },
-  { name:"Rosa", c:"#e08ab0" }, { name:"Nero", c:"#3a3a3f" }
+/* ============ MENU + SOTTOMENU COLORE ============ */
+const menuMain=document.getElementById("menu-main"), menuColor=document.getElementById("menu-color");
+function openMenu(){ menuModal.classList.add("open"); menuMain.style.display="block"; menuColor.classList.remove("open"); }
+function closeMenu(){ menuModal.classList.remove("open"); }
+btnMenu.addEventListener("click", openMenu);
+document.getElementById("close-menu").addEventListener("click", closeMenu);
+document.getElementById("close-menu2").addEventListener("click", closeMenu);
+document.getElementById("open-color").addEventListener("click", function(){ menuMain.style.display="none"; menuColor.classList.add("open"); });
+document.getElementById("back-color").addEventListener("click", function(){ menuColor.classList.remove("open"); menuMain.style.display="block"; });
+document.getElementById("open-log").addEventListener("click", function(){ showDiag(); closeMenu(); });
+document.getElementById("open-ejs").addEventListener("click", function(){ const e=ejs(); if(e&&e.menu&&e.menu.open){e.menu.open();closeMenu();} else if(e&&e.toggleMenu){e.toggleMenu();closeMenu();} else log("Emulatore non ancora pronto.","warn"); });
+
+/* ---- Colore scocca (dentro il sottomenu) ---- */
+const COLOR_KEY="crudogb_shell_color";
+const SHELL_COLORS=[
+  {name:"Verde GB",c:"#c4cfa1"},{name:"Grigio",c:"#b8b8bd"},{name:"Rosso",c:"#d24b4b"},{name:"Blu",c:"#4b7bd2"},
+  {name:"Giallo",c:"#e8c542"},{name:"Viola",c:"#9b6bd2"},{name:"Rosa",c:"#e08ab0"},{name:"Nero",c:"#3a3a3f"}
 ];
 function applyShellColor(hex){
-  document.documentElement.style.setProperty("--gb-body", hex);
-  try { localStorage.setItem(COLOR_KEY, hex); } catch(e){}
-  document.querySelectorAll(".swatch").forEach(function(sw){
-    sw.classList.toggle("selected", sw.dataset.color && sw.dataset.color.toLowerCase() === hex.toLowerCase());
-  });
-  customColor.value = /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : "#c4cfa1";
+  document.documentElement.style.setProperty("--gb-body",hex);
+  try{ localStorage.setItem(COLOR_KEY,hex); }catch(e){}
+  document.querySelectorAll(".swatch").forEach(function(sw){ sw.classList.toggle("selected", sw.dataset.color&&sw.dataset.color.toLowerCase()===hex.toLowerCase()); });
+  customColor.value=/^#[0-9a-fA-F]{6}$/.test(hex)?hex:"#c4cfa1";
 }
-function buildColorSwatches(){
-  SHELL_COLORS.forEach(function(col){
-    const sw = document.createElement("div");
-    sw.className = "swatch"; sw.style.backgroundColor = col.c;
-    sw.dataset.color = col.c; sw.title = col.name;
-    sw.addEventListener("click", function(){ applyShellColor(col.c); });
-    colorBar.insertBefore(sw, customColor);
-  });
-  const customSw = document.createElement("div");
-  customSw.className = "swatch custom"; customSw.textContent = "+";
-  customSw.addEventListener("click", function(){ customColor.click(); });
-  colorBar.insertBefore(customSw, customColor);
-  customColor.addEventListener("input", function(){ applyShellColor(customColor.value); });
-}
-buildColorSwatches();
+(function buildSwatches(){
+  SHELL_COLORS.forEach(function(col){ const sw=document.createElement("div"); sw.className="swatch"; sw.style.backgroundColor=col.c; sw.dataset.color=col.c; sw.title=col.name; sw.addEventListener("click",function(){applyShellColor(col.c);}); colorGrid.insertBefore(sw,customColor); });
+  const cs=document.createElement("div"); cs.className="swatch custom"; cs.textContent="+"; cs.addEventListener("click",function(){customColor.click();}); colorGrid.insertBefore(cs,customColor);
+  customColor.addEventListener("input",function(){applyShellColor(customColor.value);});
+})();
 (function(){ let s="#c4cfa1"; try{ s=localStorage.getItem(COLOR_KEY)||"#c4cfa1"; }catch(e){} applyShellColor(s); })();
 
-/* ============ CONFIG CDN ============
-   Percorso CORRETTO del build ufficiale EmulatorJS su jsdelivr:
-   la cartella "data/" con loader.js sta nel repo EmulatorJS/EmulatorJS.
-   Usiamo un tag di versione stabile invece di @latest. */
-const EJS_CDN = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
+/* ============ CDN + AVVIO ============ */
+const EJS_CDN="https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
+let romLoaded=false;
+function detectCore(fn){ const n=fn.toLowerCase(); if(n.endsWith(".gba"))return{core:"gba",label:"GAME BOY ADVANCE"}; if(n.endsWith(".gbc"))return{core:"gb",label:"GAME BOY COLOR"}; if(n.endsWith(".gb"))return{core:"gb",label:"GAME BOY"}; return{core:"gba",label:"ROM"}; }
+function setStatus(m){ statusEl.textContent=m||""; }
 
-let romLoaded = false;
-
-function detectCore(fileName){
-  const n = fileName.toLowerCase();
-  if(n.endsWith(".gba")) return { core:"gba", label:"GAME BOY ADVANCE" };
-  if(n.endsWith(".gbc")) return { core:"gb",  label:"GAME BOY COLOR" };
-  if(n.endsWith(".gb"))  return { core:"gb",  label:"GAME BOY" };
-  return { core:"gba", label:"ROM" };
-}
-function setStatus(msg){ statusEl.textContent = msg || ""; }
-
-/* ---- Verifica preliminare: il loader.js è raggiungibile? ---- */
 function startEmulator(file){
-  const det = detectCore(file.name);
-  const romURL = URL.createObjectURL(file);
-  tbName.textContent = file.name.replace(/\.(gb|gbc|gba|zip)$/i, "").slice(0, 22);
-  tbPlat.textContent = det.label;
+  const det=detectCore(file.name); const romURL=URL.createObjectURL(file);
+  tbName.textContent=file.name.replace(/\.(gb|gbc|gba|zip)$/i,"").slice(0,22); tbPlat.textContent=det.label;
+  log("ROM: "+file.name+" -> core '"+det.core+"'","ok");
 
-  log("ROM: " + file.name + " (" + file.size + " byte) -> core '" + det.core + "'", "ok");
-  log("Percorso CDN: " + EJS_CDN, "warn");
+  // Avviso se NON siamo isolati e il core è GBA (che richiede SAB)
+  if(det.core==="gba" && !window.crossOriginIsolated){
+    sabWarn.textContent="Attenzione: la pagina non è 'cross-origin isolated'. Sto registrando un service worker per abilitarla; se il gioco non parte, ricarica la pagina una volta.";
+    log("GBA senza crossOriginIsolated: il core potrebbe non partire finché il SW non è attivo. Consigliato: ricarica.","warn");
+  }
 
-  window.EJS_player   = "#game";
-  window.EJS_core     = det.core;
-  window.EJS_gameUrl  = romURL;
-  window.EJS_pathtodata = EJS_CDN;
-  window.EJS_startOnLoaded = true;
-  window.EJS_gameName = file.name;
-  window.EJS_onGameStart = onGameStart;
-  window.EJS_ready = function(){ log("EmulatorJS: interfaccia pronta (EJS_ready).", "ok"); };
-  window.EJS_onLoadState = function(){ log("Stato caricato.", "ok"); };
+  window.EJS_player="#game"; window.EJS_core=det.core; window.EJS_gameUrl=romURL;
+  window.EJS_pathtodata=EJS_CDN; window.EJS_startOnLoaded=true; window.EJS_gameName=file.name;
+  window.EJS_onGameStart=onGameStart;
+  window.EJS_ready=function(){ log("EmulatorJS pronto (EJS_ready).","ok"); };
 
-  log("Inietto loader.js…", "warn");
-  const s = document.createElement("script");
-  s.src = EJS_CDN + "loader.js";
-  s.onload  = function(){ log("loader.js SCARICATO. Avvio core in corso… (può metterci qualche secondo)", "ok"); };
-  s.onerror = function(){
-    showDiag();
-    log("FALLITO il download di loader.js dalla CDN.", "err");
-    log("=> Il core non può partire. Cause tipiche: rete assente, CDN bloccata, o GitHub Pages senza HTTPS.", "err");
-    setStatus("Errore: core non scaricato. Apri LOG.");
-  };
+  log("Inietto loader.js…","warn");
+  const s=document.createElement("script"); s.src=EJS_CDN+"loader.js";
+  s.onload=function(){ log("loader.js scaricato. Avvio core… (attendere)","ok"); };
+  s.onerror=function(){ showDiag(); log("FALLITO download loader.js dalla CDN.","err"); setStatus("Errore core. Apri LOG."); };
   document.body.appendChild(s);
-  setStatus("Avvio… scaricamento core " + det.label);
-  showDiag();
+  setStatus("Avvio… core "+det.label); showDiag();
 }
-
 function onGameStart(){
-  romLoaded = true;
-  loader.style.display = "none";
-  [btnMenu, btnSave, btnLoad, btnFull].forEach(b => b.disabled = false);
-  setStatus("");
-  log("GIOCO AVVIATO! I comandi ora sono attivi.", "ok");
-  setTimeout(resizeCanvas, 100);
+  romLoaded=true; loader.style.display="none";
+  [btnSave,btnLoad,btnFull].forEach(b=>b.disabled=false);
+  setStatus(""); log("GIOCO AVVIATO! Comandi attivi.","ok"); setTimeout(resizeCanvas,100);
 }
+pickBtn.addEventListener("click",()=>romInput.click());
+romInput.addEventListener("change",(e)=>{ const f=e.target.files&&e.target.files[0]; if(!f){log("Nessun file.","warn");return;} startEmulator(f); });
 
-pickBtn.addEventListener("click", () => romInput.click());
-romInput.addEventListener("change", (e) => {
-  const file = e.target.files && e.target.files[0];
-  if(!file){ log("Nessun file selezionato.", "warn"); return; }
-  startEmulator(file);
-});
-
-/* ============ BINDING PULSANTI ============ */
-const KEYMAP = {
+/* ============ BINDING INPUT (robusto) ============
+   Metodo 1 (preferito): API diretta di EmulatorJS -> gameManager.simulateInput(player, buttonIndex, value)
+   Indici standard RetroArch: 0=B,1=Y,2=Select,3=Start,4=Up,5=Down,6=Left,7=Right,8=A,9=X...
+   Metodo 2 (fallback): eventi KeyboardEvent (mappa tasti EmulatorJS). */
+function ejs(){ return window.EJS_emulator||null; }
+const BTN_INDEX={ b:0, select:2, start:3, up:4, down:5, left:6, right:7, a:8 };
+const KEYMAP={
   up:{key:"ArrowUp",code:"ArrowUp",keyCode:38}, down:{key:"ArrowDown",code:"ArrowDown",keyCode:40},
   left:{key:"ArrowLeft",code:"ArrowLeft",keyCode:37}, right:{key:"ArrowRight",code:"ArrowRight",keyCode:39},
   a:{key:"x",code:"KeyX",keyCode:88}, b:{key:"z",code:"KeyZ",keyCode:90},
   start:{key:"Enter",code:"Enter",keyCode:13}, select:{key:"Shift",code:"ShiftRight",keyCode:16,location:2}
 };
-function dispatchKey(type, def){
-  const ev = new KeyboardEvent(type, { key:def.key, code:def.code, keyCode:def.keyCode, which:def.keyCode, location:def.location||0, bubbles:true, cancelable:true });
-  try { Object.defineProperty(ev, "keyCode", { get:()=>def.keyCode }); } catch(e){}
-  try { Object.defineProperty(ev, "which",  { get:()=>def.keyCode }); } catch(e){}
-  document.dispatchEvent(ev);
-  const cv = document.querySelector("#game canvas");
-  if(cv) cv.dispatchEvent(ev);
-}
-function pressBtn(name){ if(KEYMAP[name]) dispatchKey("keydown", KEYMAP[name]); }
-function releaseBtn(name){ if(KEYMAP[name]) dispatchKey("keyup", KEYMAP[name]); }
+function dispatchKey(type,def){ const ev=new KeyboardEvent(type,{key:def.key,code:def.code,keyCode:def.keyCode,which:def.keyCode,location:def.location||0,bubbles:true,cancelable:true}); try{Object.defineProperty(ev,"keyCode",{get:()=>def.keyCode});}catch(e){} try{Object.defineProperty(ev,"which",{get:()=>def.keyCode});}catch(e){} document.dispatchEvent(ev); const cv=document.querySelector("#game canvas"); if(cv)cv.dispatchEvent(ev); }
 
-function bindButton(id, name){
-  const btn = document.getElementById(id); if(!btn) return;
-  function onP(e){ if(e&&e.cancelable)e.preventDefault(); btn.classList.add("active"); pressBtn(name); }
-  function onR(e){ if(e&&e.cancelable)e.preventDefault(); btn.classList.remove("active"); releaseBtn(name); }
+function press(name){ setInput(name,1); }
+function release(name){ setInput(name,0); }
+function setInput(name,val){
+  const e=ejs();
+  // Metodo 1: API diretta
+  if(e && e.gameManager && typeof e.gameManager.simulateInput==="function" && (name in BTN_INDEX)){
+    try{ e.gameManager.simulateInput(0, BTN_INDEX[name], val); return; }catch(err){ /* fallback sotto */ }
+  }
+  // Metodo 2: eventi tastiera
+  if(KEYMAP[name]) dispatchKey(val?"keydown":"keyup", KEYMAP[name]);
+}
+
+function bindButton(id,name){ const btn=document.getElementById(id); if(!btn)return;
+  function onP(e){ if(e&&e.cancelable)e.preventDefault(); btn.classList.add("active"); press(name); }
+  function onR(e){ if(e&&e.cancelable)e.preventDefault(); btn.classList.remove("active"); release(name); }
   btn.addEventListener("touchstart",onP,{passive:false}); btn.addEventListener("touchend",onR,{passive:false});
   btn.addEventListener("touchcancel",onR,{passive:false}); btn.addEventListener("mousedown",onP);
   btn.addEventListener("mouseup",onR); btn.addEventListener("mouseleave",onR);
@@ -292,13 +318,12 @@ function bindButton(id, name){
 bindButton("btn-a","a"); bindButton("btn-b","b"); bindButton("btn-select","select"); bindButton("btn-start","start");
 
 (function bindDpad(){
-  const dpad=document.getElementById("dpad"); if(!dpad) return;
-  const glow=document.getElementById("dpad-glow");
+  const dpad=document.getElementById("dpad"); if(!dpad)return; const glow=document.getElementById("dpad-glow");
   let activeDir={up:false,down:false,left:false,right:false};
   function moveGlow(d){ if(!glow)return; let gx=0,gy=0; if(d.left)gx-=1; if(d.right)gx+=1; if(d.up)gy-=1; if(d.down)gy+=1; const len=Math.hypot(gx,gy); if(len>0){gx/=len;gy/=len;const R=52;glow.style.transform="translate("+(gx*R)+"px,"+(gy*R)+"px)";}else glow.style.transform="translate(0,0)"; }
   function computeDir(cX,cY){ const rect=dpad.getBoundingClientRect(); const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2; const dx=cX-cx,dy=cY-cy; const dist=Math.hypot(dx,dy); const res={up:false,down:false,left:false,right:false}; if(dist<rect.width*0.12)return res; let ang=Math.atan2(dy,dx)*180/Math.PI; if(ang<0)ang+=360; const sec=Math.round(ang/45)%8; switch(sec){case 0:res.right=true;break;case 1:res.right=true;res.down=true;break;case 2:res.down=true;break;case 3:res.down=true;res.left=true;break;case 4:res.left=true;break;case 5:res.left=true;res.up=true;break;case 6:res.up=true;break;case 7:res.up=true;res.right=true;break;} return res; }
-  function applyDir(cX,cY){ const d=computeDir(cX,cY); ["up","down","left","right"].forEach(function(k){ if(d[k]&&!activeDir[k])pressBtn(k); if(!d[k]&&activeDir[k])releaseBtn(k); }); activeDir=d; moveGlow(d); }
-  function clearDirs(){ ["up","down","left","right"].forEach(function(k){ if(activeDir[k])releaseBtn(k); }); activeDir={up:false,down:false,left:false,right:false}; moveGlow(activeDir); }
+  function applyDir(cX,cY){ const d=computeDir(cX,cY); ["up","down","left","right"].forEach(function(k){ if(d[k]&&!activeDir[k])press(k); if(!d[k]&&activeDir[k])release(k); }); activeDir=d; moveGlow(d); }
+  function clearDirs(){ ["up","down","left","right"].forEach(function(k){ if(activeDir[k])release(k); }); activeDir={up:false,down:false,left:false,right:false}; moveGlow(activeDir); }
   function onDown(e){ if(e&&e.cancelable)e.preventDefault(); dpad.classList.add("active"); const pt=(e.touches&&e.touches[0])||e; applyDir(pt.clientX,pt.clientY); }
   function onMove(e){ if(!dpad.classList.contains("active"))return; if(e&&e.cancelable)e.preventDefault(); const pt=(e.touches&&e.touches[0])||e; applyDir(pt.clientX,pt.clientY); }
   function onUp(e){ if(e&&e.cancelable)e.preventDefault(); dpad.classList.remove("active"); clearDirs(); }
@@ -308,18 +333,15 @@ bindButton("btn-a","a"); bindButton("btn-b","b"); bindButton("btn-select","selec
   dpad.addEventListener("mouseup",onUp); dpad.addEventListener("mouseleave",onUp);
 })();
 
-/* ============ SISTEMA ============ */
-function ejs(){ return window.EJS_emulator || null; }
-btnMenu.addEventListener("click", function(){ const e=ejs(); if(!e){log("Emulatore non pronto.","warn");return;} if(e.menu&&e.menu.open)e.menu.open(); else if(typeof e.toggleMenu==="function")e.toggleMenu(); });
+/* ============ SALVA / CARICA / FULLSCREEN ============ */
 btnSave.addEventListener("click", async function(){ const e=ejs(); if(!e)return; try{ const st=await e.gameManager.getState(); const key="crudogb_state_"+(window.EJS_gameName||"rom"); let bin="";const by=new Uint8Array(st);for(let i=0;i<by.length;i++)bin+=String.fromCharCode(by[i]); localStorage.setItem(key,btoa(bin)); log("Salvato.","ok"); }catch(err){ log("Errore salvataggio: "+err,"err"); } });
 btnLoad.addEventListener("click", async function(){ const e=ejs(); if(!e)return; try{ const key="crudogb_state_"+(window.EJS_gameName||"rom"); const b64=localStorage.getItem(key); if(!b64){log("Nessun salvataggio.","warn");return;} const bin=atob(b64);const by=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)by[i]=bin.charCodeAt(i); await e.gameManager.loadState(by); log("Caricato.","ok"); }catch(err){ log("Errore caricamento: "+err,"err"); } });
 btnFull.addEventListener("click", function(){ const wrap=document.getElementById("game-wrapper"); const target=document.querySelector("#game canvas")||wrap; const req=target.requestFullscreen||target.webkitRequestFullscreen||target.webkitEnterFullscreen; if(document.fullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}else if(req){req.call(target);} });
 
 function resizeCanvas(){ const cv=document.querySelector("#game canvas"); if(!cv)return; cv.style.width="100%"; cv.style.height="100%"; cv.style.imageRendering="pixelated"; }
-window.addEventListener("resize", resizeCanvas);
-document.addEventListener("fullscreenchange", resizeCanvas);
-document.addEventListener("touchmove", function(e){ if(romLoaded && e.cancelable) e.preventDefault(); }, { passive:false });
-document.addEventListener("gesturestart", function(e){ e.preventDefault(); });
+window.addEventListener("resize",resizeCanvas); document.addEventListener("fullscreenchange",resizeCanvas);
+document.addEventListener("touchmove",function(e){ if(romLoaded&&e.cancelable)e.preventDefault(); },{passive:false});
+document.addEventListener("gesturestart",function(e){ e.preventDefault(); });
 </script>
 </body>
 </html>
