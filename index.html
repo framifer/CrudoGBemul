@@ -2,18 +2,18 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>CrudoGB's Emul - GB / GBC / GBA</title>
 <style>
 * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 :root { --gb-body: #c4cfa1; }
-html, body { height: 100%; width: 100%; overscroll-behavior: none; }
-body { background-color:#111; margin:0; padding:0; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:'Courier New', monospace; overflow:hidden; touch-action:none; }
+html, body { height: 100%; }
+body { background-color:#111; margin:0; padding:0; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:'Courier New', monospace; overflow:hidden; }
 
 #phone-screen { width:100vw; max-width:420px; height:100vh; max-height:900px; background-color:var(--gb-body); display:flex; flex-direction:column; border:2px solid #2a2a2a; border-radius:26px 26px 44px 44px; box-shadow:0 0 30px rgba(0,0,0,0.9), inset 0 0 8px rgba(255,255,255,0.15); overflow:hidden; position:relative; transition:background-color 0.25s ease; }
-
 #screen-container { flex:0 0 46%; background-color:#222; display:flex; justify-content:center; align-items:center; padding:12px; position:relative; }
 #game-wrapper { position:relative; width:320px; height:320px; max-width:100%; aspect-ratio:1/1; margin:0 auto; border:4px solid #111; border-radius:8px; background-color:#000; box-shadow:inset 0 0 12px rgba(0,0,0,0.7); overflow:hidden; }
+
 #game { width:100%; height:100%; }
 #game canvas, canvas { display:block !important; width:100% !important; height:100% !important; image-rendering:pixelated; border-radius:4px; background:#000; }
 
@@ -32,57 +32,43 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 #topbar { position:absolute; top:0; left:0; right:0; height:20px; background:rgba(0,0,0,0.55); color:#c4cfa1; font-size:9px; display:flex; align-items:center; justify-content:space-between; padding:0 8px; z-index:15; pointer-events:none; }
 #topbar .plat { color:#8bac0f; font-weight:bold; }
 
-#controller { flex:1; background-color:var(--gb-body); display:flex; flex-direction:column; justify-content:space-between; padding:18px 18px 34px; border-top:4px solid #555; transition:background-color 0.25s ease; touch-action:none; }
-
-/* Barra superiore: L a sinistra, MENU al centro, R a destra */
-#sysbar { display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:12px; gap:10px; }
-
-.sys-btn { background:#3a3a3a; color:#c4cfa1; font-family:inherit; font-size:11px; font-weight:bold; letter-spacing:1.5px; border:none; border-radius:8px; padding:10px 18px; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), 0 3px 5px rgba(0,0,0,0.5); cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-.sys-btn:active { transform:translateY(1px); background:#222; }
-.sys-btn:disabled { opacity:0.4; }
-
-/* Pulsanti dorsali GBA L e R */
-.shoulder-btn { width:86px; height:38px; background:linear-gradient(145deg, #525252, #262626); color:#e8f0d0; font-family:inherit; font-size:16px; font-weight:bold; letter-spacing:1px; border:2px solid #1a1a1a; cursor:pointer; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.22), 0 4px 6px rgba(0,0,0,0.55); touch-action:none; -webkit-tap-highlight-color:transparent; transition:transform 0.04s ease, background 0.04s ease; }
-#btn-l { border-radius:16px 8px 14px 8px; }
-#btn-r { border-radius:8px 16px 8px 14px; }
-.shoulder-btn:active, .shoulder-btn.active { transform:translateY(2px); background:linear-gradient(145deg, #2b2b2b, #151515); color:#8bac0f; box-shadow:inset 2px 2px 5px rgba(0,0,0,0.85); }
-
-.controls-top { display:flex; justify-content:space-between; align-items:flex-start; width:100%; padding:0 4px; touch-action:none; }
-
+#controller { flex:1; background-color:var(--gb-body); display:flex; flex-direction:column; justify-content:space-between; padding:30px 18px 40px; border-top:4px solid #555; transition:background-color 0.25s ease; }
+.controls-top { display:flex; justify-content:space-between; align-items:flex-start; width:100%; padding:0 4px; }
 .dpad { position:relative; width:190px; height:190px; flex-shrink:0; border-radius:50%; background:radial-gradient(circle at 42% 38%, #2c2c2c, #0c0c0c 78%); box-shadow:0 6px 10px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.08), inset -3px -3px 8px rgba(0,0,0,0.9); touch-action:none; -webkit-tap-highlight-color:transparent; cursor:pointer; }
-.dpad::before, .dpad::after { content:""; position:absolute; background:linear-gradient(145deg, #3a3a3a, #161616); box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), inset -1px -1px 3px rgba(0,0,0,0.8); border-radius:11px; pointer-events:none; }
+.dpad::before, .dpad::after { content:""; position:absolute; background:linear-gradient(145deg, #3a3a3a, #161616); box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), inset -1px -1px 3px rgba(0,0,0,0.8); border-radius:11px; }
 .dpad::before { top:26px; bottom:26px; left:50%; width:52px; transform:translateX(-50%); }
 .dpad::after { left:26px; right:26px; top:50%; height:52px; transform:translateY(-50%); }
 .dpad.active { box-shadow:0 4px 6px rgba(0,0,0,0.5), inset 3px 3px 6px rgba(0,0,0,0.9); }
-
-.dpad-glow { position:absolute; width:66px; height:66px; left:50%; top:50%; margin-left:-33px; margin-top:-33px; border-radius:50%; background:radial-gradient(circle, rgba(120,205,255,0.55) 0%, rgba(90,150,220,0.28) 45%, rgba(0,0,0,0) 72%); box-shadow:0 0 14px rgba(120,205,255,0.5), inset 0 0 8px rgba(0,0,0,0.6); pointer-events:none; opacity:0; transition:opacity 0.08s ease, transform 0.05s ease; z-index:5; }
+.dpad-glow { position:absolute; width:66px; height:66px; left:50%; top:50%; margin-left:-33px; margin-top:-33px; border-radius:50%; background:radial-gradient(circle, rgba(120,205,255,0.55) 0%, rgba(90,150,220,0.28) 45%, rgba(0,0,0,0) 72%); box-shadow:0 0 14px rgba(120,205,255,0.5), inset 0 0 8px rgba(0,0,0,0.6); pointer-events:none; opacity:0; transition:opacity 0.08s ease, transform 0.06s ease; z-index:5; }
 .dpad.active .dpad-glow { opacity:1; }
-
-.action-buttons { position:relative; width:150px; height:200px; flex-shrink:0; margin-right:60px; filter:drop-shadow(3px 6px 5px rgba(0,0,0,0.3)); touch-action:none; }
+.action-buttons { position:relative; width:150px; height:200px; flex-shrink:0; margin-right:60px; filter:drop-shadow(3px 6px 5px rgba(0,0,0,0.3)); }
 .btn-round-container { position:absolute; text-align:center; }
 .btn-b-container { left:4px; top:120px; }
 .btn-a-container { left:64px; top:40px; }
-
-.btn-round { width:74px; height:74px; background:linear-gradient(145deg, #a72352, #6e1333); border-radius:50%; border:none; color:white; font-weight:bold; font-size:25px; cursor:pointer; box-shadow:inset 1px 2px 3px rgba(255,255,255,0.3), inset -2px -2px 5px rgba(0,0,0,0.6); transition:transform 0.04s ease; touch-action:none; -webkit-tap-highlight-color:transparent; }
+.btn-round { width:74px; height:74px; background:linear-gradient(145deg, #a72352, #6e1333); border-radius:50%; border:none; color:white; font-weight:bold; font-size:25px; cursor:pointer; box-shadow:inset 1px 2px 3px rgba(255,255,255,0.3), inset -2px -2px 5px rgba(0,0,0,0.6); transition:transform 0.05s ease; touch-action:none; -webkit-tap-highlight-color:transparent; }
 .btn-round:active, .btn-round.active { transform:translate(2px,3px); box-shadow:inset 2px 2px 7px rgba(0,0,0,0.8); background:#5b0f2a; }
-
-.controls-bottom { display:flex; justify-content:center; gap:45px; margin-top:0; margin-bottom:20px; touch-action:none; }
+.controls-bottom { display:flex; justify-content:center; gap:45px; margin-top:0; margin-bottom:40px; }
 .btn-pill-container { text-align:center; transform:rotate(-25deg); filter:drop-shadow(2px 4px 3px rgba(0,0,0,0.3)); }
 .btn-pill { width:88px; height:23px; background:linear-gradient(145deg, #6e6e6e, #333); border-radius:12px; border:none; cursor:pointer; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.2), inset -1px -1px 3px rgba(0,0,0,0.7); touch-action:none; -webkit-tap-highlight-color:transparent; }
 .btn-pill:active, .btn-pill.active { transform:translate(1px,2px); background:#222; box-shadow:inset 1px 1px 4px rgba(0,0,0,0.9); }
-.btn-pill-label { font-size:12px; color:#306230; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:1px; pointer-events:none; }
+.btn-pill-label { font-size:12px; color:#306230; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:1px; }
 
-/* ---------- MODALE MENU (con SALVA, CARICA e Colore) ---------- */
+/* Barra pulsanti di sistema (senza il cambio colore, ora in un menu) */
+#sysbar { display:flex; justify-content:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.sys-btn { background:#3a3a3a; color:#c4cfa1; font-family:inherit; font-size:9px; font-weight:bold; letter-spacing:1px; border:none; border-radius:6px; padding:7px 10px; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.5); cursor:pointer; }
+.sys-btn:active { transform:translateY(1px); background:#222; }
+.sys-btn:disabled { opacity:0.4; }
+
+/* ---------- MODALE MENU (con sotto-voce Colore) ---------- */
 #menu-modal { position:absolute; inset:0; background:rgba(0,0,0,0.75); z-index:40; display:none; justify-content:center; align-items:center; }
 #menu-modal.open { display:flex; }
-.menu-panel { background:#1a1f18; border:2px solid #8bac0f; border-radius:12px; width:86%; max-width:340px; max-height:86%; overflow-y:auto; padding:16px; color:#c4cfa1; box-shadow:0 8px 30px rgba(0,0,0,0.7); touch-action:pan-y; }
+.menu-panel { background:#1a1f18; border:2px solid #8bac0f; border-radius:12px; width:86%; max-width:340px; max-height:80%; overflow-y:auto; padding:16px; color:#c4cfa1; box-shadow:0 8px 30px rgba(0,0,0,0.7); }
 .menu-panel h2 { margin:0 0 10px; font-size:15px; color:#8bac0f; text-align:center; letter-spacing:1px; }
-.menu-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:9px 6px; border-bottom:1px solid #2a3324; }
+.menu-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 6px; border-bottom:1px solid #2a3324; }
 .menu-row:last-child { border-bottom:none; }
 .menu-row span { font-size:12px; font-weight:bold; }
 .menu-act { background:#306230; color:#e8f0d0; border:none; border-radius:6px; font-family:inherit; font-size:11px; font-weight:bold; padding:8px 12px; cursor:pointer; }
 .menu-act:active { transform:translateY(1px); }
-.menu-act:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
 .menu-close { display:block; width:100%; margin-top:12px; background:#5b1030; color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:bold; padding:11px; cursor:pointer; }
 
 /* Griglia colori dentro il sottomenu */
@@ -94,121 +80,6 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 #custom-color { display:none; }
 .submenu { display:none; }
 .submenu.open { display:block; }
-
-/* =========================================================================
-   MODALITÀ ORIZZONTALE (LANDSCAPE) PER CELLULARE
-   ========================================================================= */
-@media (orientation: landscape) {
-  #phone-screen {
-    max-width: 100vw;
-    max-height: 100vh;
-    width: 100vw;
-    height: 100vh;
-    border-radius: 18px;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-  }
-
-  #screen-container {
-    flex: 0 0 auto;
-    height: 100%;
-    padding: 44px 10px 10px;
-    background-color: transparent;
-    z-index: 5;
-  }
-
-  #game-wrapper {
-    height: min(78vh, 340px);
-    width: auto;
-    aspect-ratio: 3 / 2;
-  }
-
-  #controller {
-    display: contents;
-  }
-
-  #sysbar {
-    position: absolute;
-    top: 8px;
-    left: max(14px, env(safe-area-inset-left));
-    right: max(14px, env(safe-area-inset-right));
-    width: auto;
-    margin: 0;
-    z-index: 25;
-    pointer-events: none;
-  }
-
-  #sysbar button {
-    pointer-events: auto;
-  }
-
-  .shoulder-btn {
-    width: 96px;
-    height: 36px;
-  }
-
-  .controls-top {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 36px max(18px, env(safe-area-inset-right)) 20px max(18px, env(safe-area-inset-left));
-    pointer-events: none;
-    z-index: 10;
-  }
-
-  .dpad {
-    pointer-events: auto;
-    width: 150px;
-    height: 150px;
-  }
-  .dpad::before { top: 20px; bottom: 20px; width: 42px; }
-  .dpad::after  { left: 20px; right: 20px; height: 42px; }
-
-  .action-buttons {
-    pointer-events: auto;
-    width: 146px;
-    height: 160px;
-    margin-right: 0;
-  }
-  .btn-b-container { left: 4px; top: 86px; }
-  .btn-a-container { left: 74px; top: 18px; }
-  .btn-round { width: 66px; height: 66px; font-size: 22px; }
-
-  .controls-bottom {
-    position: absolute;
-    left: max(24px, env(safe-area-inset-left));
-    right: max(24px, env(safe-area-inset-right));
-    bottom: 10px;
-    margin: 0;
-    justify-content: space-between;
-    pointer-events: none;
-    z-index: 15;
-  }
-
-  .btn-pill-container {
-    pointer-events: auto;
-    transform: rotate(-18deg);
-  }
-  .btn-pill { width: 70px; height: 20px; }
-  .btn-pill-label { font-size: 10px; margin-top: 4px; }
-}
-
-/* Adattamento per schermi verticali compatti */
-@media (orientation: portrait) and (max-height: 740px) {
-  #screen-container { flex: 0 0 42%; padding: 8px; }
-  #controller { padding: 10px 14px 18px; }
-  .dpad { width: 160px; height: 160px; }
-  .dpad::before { top: 22px; bottom: 22px; width: 44px; }
-  .dpad::after { left: 22px; right: 22px; height: 44px; }
-  .action-buttons { height: 170px; margin-right: 30px; }
-  .btn-b-container { left: 4px; top: 96px; }
-  .btn-a-container { left: 60px; top: 28px; }
-  .btn-round { width: 66px; height: 66px; font-size: 22px; }
-  .controls-bottom { margin-bottom: 10px; }
-}
 </style>
 </head>
 <body>
@@ -230,48 +101,43 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
   </div>
 
   <div id="controller">
-    <!-- Barra superiore: L a sinistra, MENU al centro, R a destra -->
     <div id="sysbar">
-      <button class="shoulder-btn" id="btn-l" type="button">L</button>
-      <button class="sys-btn" id="btn-menu" type="button">MENU</button>
-      <button class="shoulder-btn" id="btn-r" type="button">R</button>
+      <button class="sys-btn" id="btn-menu">MENU</button>
+      <button class="sys-btn" id="btn-save" disabled>SALVA</button>
+      <button class="sys-btn" id="btn-load" disabled>CARICA</button>
+      <button class="sys-btn" id="btn-full" disabled>FULLSCREEN</button>
     </div>
-
     <div class="controls-top">
       <div class="dpad" id="dpad">
         <div class="dpad-glow" id="dpad-glow"></div>
       </div>
-      <div class="action-buttons" id="ab-zone">
-        <div class="btn-round-container btn-b-container"><button class="btn-round" id="btn-b" type="button">B</button></div>
-        <div class="btn-round-container btn-a-container"><button class="btn-round" id="btn-a" type="button">A</button></div>
+      <div class="action-buttons">
+        <div class="btn-round-container btn-b-container"><button class="btn-round" id="btn-b">B</button></div>
+        <div class="btn-round-container btn-a-container"><button class="btn-round" id="btn-a">A</button></div>
       </div>
     </div>
-
     <div class="controls-bottom">
-      <div class="btn-pill-container"><button class="btn-pill" id="btn-select" type="button"></button><div class="btn-pill-label">SELECT</div></div>
-      <div class="btn-pill-container"><button class="btn-pill" id="btn-start" type="button"></button><div class="btn-pill-label">START</div></div>
+      <div class="btn-pill-container"><button class="btn-pill" id="btn-select"></button><div class="btn-pill-label">SELECT</div></div>
+      <div class="btn-pill-container"><button class="btn-pill" id="btn-start"></button><div class="btn-pill-label">START</div></div>
     </div>
   </div>
 
-  <!-- MODALE MENU con SALVA, CARICA, FULLSCREEN e sottomenu Colore -->
+  <!-- MODALE MENU con sottomenu Colore -->
   <div id="menu-modal">
     <div class="menu-panel">
       <h2>MENU</h2>
       <div id="menu-main">
-        <div class="menu-row"><span>Salva stato rapido</span><button class="menu-act" id="btn-save" type="button" disabled>SALVA</button></div>
-        <div class="menu-row"><span>Carica stato rapido</span><button class="menu-act" id="btn-load" type="button" disabled>CARICA</button></div>
-        <div class="menu-row"><span>Schermo intero</span><button class="menu-act" id="btn-full" type="button" disabled>FULLSCREEN</button></div>
-        <div class="menu-row"><span>Cambia colore scocca</span><button class="menu-act" id="open-color" type="button">COLORE ▸</button></div>
-        <div class="menu-row"><span>Menu emulatore (impostazioni)</span><button class="menu-act" id="open-ejs" type="button">APRI</button></div>
-        <div class="menu-row"><span>Log diagnostico</span><button class="menu-act" id="open-log" type="button">LOG</button></div>
-        <button class="menu-close" id="close-menu" type="button">CHIUDI</button>
+        <div class="menu-row"><span>Cambia colore scocca</span><button class="menu-act" id="open-color">COLORE ▸</button></div>
+        <div class="menu-row"><span>Menu emulatore (impostazioni)</span><button class="menu-act" id="open-ejs">APRI</button></div>
+        <div class="menu-row"><span>Log diagnostico</span><button class="menu-act" id="open-log">LOG</button></div>
+        <button class="menu-close" id="close-menu">CHIUDI</button>
       </div>
       <div id="menu-color" class="submenu">
-        <div class="menu-row"><span>Colore scocca</span><button class="menu-act" id="back-color" type="button">◂ INDIETRO</button></div>
+        <div class="menu-row"><span>Colore scocca</span><button class="menu-act" id="back-color">◂ INDIETRO</button></div>
         <div id="color-grid">
           <input type="color" id="custom-color" value="#c4cfa1">
         </div>
-        <button class="menu-close" id="close-menu2" type="button">CHIUDI</button>
+        <button class="menu-close" id="close-menu2">CHIUDI</button>
       </div>
     </div>
   </div>
@@ -280,16 +146,23 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 <script>
 "use strict";
 /* =========================================================================
-   CrudoGB's Emul — v4
-   - Multi-touch reale indipendente (L/R + D-Pad + A/B simultanei + slide A/B)
-   - Feedback aptico (vibrazione) identico per A, B, L, R, Start, Select
-   - Anti-stuck keys automatico su apertura Menu / cambio orientamento / blur
+   CrudoGB's Emul — v3
+   FIX principali rispetto alla v2:
+   1) SharedArrayBuffer / COOP-COEP via service worker (necessario per il core
+      GBA su host statici come GitHub Pages che NON inviano quegli header).
+   2) Cambio colore spostato in un SOTTOMENU del MENU (niente sovrapposizioni).
+   3) Binding input più robusto: usa l'API diretta di EmulatorJS quando c'è,
+      con fallback su eventi tastiera.
    ========================================================================= */
 
-/* ============ 0) COOP/COEP via Service Worker ============ */
+/* ============ 0) COOP/COEP via Service Worker ============
+   Il core GBA (mGBA) usa SharedArrayBuffer, che il browser abilita SOLO se la
+   pagina è "cross-origin isolated". GitHub Pages non manda gli header COOP/COEP,
+   quindi li iniettiamo con un service worker (tecnica "coi-serviceworker").
+   Se non siamo già isolati, registriamo il SW e ricarichiamo una volta. */
 (function coiServiceWorker(){
-  if (window.crossOriginIsolated) return;
-  if (!window.isSecureContext) return;
+  if (window.crossOriginIsolated) return; // già isolati: nulla da fare
+  if (!window.isSecureContext) return;    // serve HTTPS
   if (!('serviceWorker' in navigator)) return;
 
   const swCode = `
@@ -309,6 +182,7 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
   const blob = new Blob([swCode], { type: "text/javascript" });
   const url = URL.createObjectURL(blob);
   navigator.serviceWorker.register(url).then(function(reg){
+    // se il SW è nuovo (non controlla ancora la pagina) ricarichiamo per applicare gli header
     if (!navigator.serviceWorker.controller) {
       reg.addEventListener("updatefound", function(){
         const sw = reg.installing;
@@ -316,17 +190,11 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
           if (sw.state === "activated") window.location.reload();
         });
       });
+      // fallback: piccola attesa poi reload se serve
       setTimeout(function(){ if (!window.crossOriginIsolated && navigator.serviceWorker.controller) window.location.reload(); }, 800);
     }
   }).catch(function(e){ console.error("SW register fail", e); });
 })();
-
-/* ============ VIBRAZIONE (HAPTIC FEEDBACK) ============ */
-function haptic(ms){
-  try {
-    if (navigator.vibrate) navigator.vibrate(ms || 14);
-  } catch(e){}
-}
 
 /* ============ LOG A SCHERMO ============ */
 const diagEl = document.getElementById("diag");
@@ -334,7 +202,7 @@ function log(msg, cls){ const l=document.createElement("div"); if(cls)l.classNam
 function showDiag(){ diagEl.style.display="block"; }
 window.addEventListener("error", function(e){ showDiag(); log("ERRORE JS: "+(e.message||e.type)+(e.filename?" @ "+e.filename+":"+e.lineno:""),"err"); });
 window.addEventListener("unhandledrejection", function(e){ showDiag(); log("PROMISE RIFIUTATA: "+(e.reason&&e.reason.message?e.reason.message:e.reason),"err"); });
-log("Pagina caricata (v4 Multi-Touch + Haptic).", "ok");
+log("Pagina caricata.", "ok");
 log("crossOriginIsolated = " + window.crossOriginIsolated, window.crossOriginIsolated ? "ok" : "warn");
 
 /* ---- Riferimenti UI ---- */
@@ -348,30 +216,15 @@ const romInput=document.getElementById("rom-input"), pickBtn=document.getElement
 
 /* ============ MENU + SOTTOMENU COLORE ============ */
 const menuMain=document.getElementById("menu-main"), menuColor=document.getElementById("menu-color");
-function openMenu(){
-  haptic(12);
-  releaseAllInputs();
-  menuModal.classList.add("open");
-  menuMain.style.display="block";
-  menuColor.classList.remove("open");
-}
-function closeMenu(){
-  haptic(10);
-  menuModal.classList.remove("open");
-}
+function openMenu(){ menuModal.classList.add("open"); menuMain.style.display="block"; menuColor.classList.remove("open"); }
+function closeMenu(){ menuModal.classList.remove("open"); }
 btnMenu.addEventListener("click", openMenu);
 document.getElementById("close-menu").addEventListener("click", closeMenu);
 document.getElementById("close-menu2").addEventListener("click", closeMenu);
-document.getElementById("open-color").addEventListener("click", function(){ haptic(10); menuMain.style.display="none"; menuColor.classList.add("open"); });
-document.getElementById("back-color").addEventListener("click", function(){ haptic(10); menuColor.classList.remove("open"); menuMain.style.display="block"; });
-document.getElementById("open-log").addEventListener("click", function(){ haptic(10); showDiag(); closeMenu(); });
-document.getElementById("open-ejs").addEventListener("click", function(){
-  haptic(10);
-  const e=ejs();
-  if(e&&e.menu&&e.menu.open){e.menu.open();closeMenu();}
-  else if(e&&e.toggleMenu){e.toggleMenu();closeMenu();}
-  else log("Emulatore non ancora pronto.","warn");
-});
+document.getElementById("open-color").addEventListener("click", function(){ menuMain.style.display="none"; menuColor.classList.add("open"); });
+document.getElementById("back-color").addEventListener("click", function(){ menuColor.classList.remove("open"); menuMain.style.display="block"; });
+document.getElementById("open-log").addEventListener("click", function(){ showDiag(); closeMenu(); });
+document.getElementById("open-ejs").addEventListener("click", function(){ const e=ejs(); if(e&&e.menu&&e.menu.open){e.menu.open();closeMenu();} else if(e&&e.toggleMenu){e.toggleMenu();closeMenu();} else log("Emulatore non ancora pronto.","warn"); });
 
 /* ---- Colore scocca (dentro il sottomenu) ---- */
 const COLOR_KEY="crudogb_shell_color";
@@ -386,8 +239,8 @@ function applyShellColor(hex){
   customColor.value=/^#[0-9a-fA-F]{6}$/.test(hex)?hex:"#c4cfa1";
 }
 (function buildSwatches(){
-  SHELL_COLORS.forEach(function(col){ const sw=document.createElement("div"); sw.className="swatch"; sw.style.backgroundColor=col.c; sw.dataset.color=col.c; sw.title=col.name; sw.addEventListener("click",function(){haptic(8);applyShellColor(col.c);}); colorGrid.insertBefore(sw,customColor); });
-  const cs=document.createElement("div"); cs.className="swatch custom"; cs.textContent="+"; cs.addEventListener("click",function(){haptic(8);customColor.click();}); colorGrid.insertBefore(cs,customColor);
+  SHELL_COLORS.forEach(function(col){ const sw=document.createElement("div"); sw.className="swatch"; sw.style.backgroundColor=col.c; sw.dataset.color=col.c; sw.title=col.name; sw.addEventListener("click",function(){applyShellColor(col.c);}); colorGrid.insertBefore(sw,customColor); });
+  const cs=document.createElement("div"); cs.className="swatch custom"; cs.textContent="+"; cs.addEventListener("click",function(){customColor.click();}); colorGrid.insertBefore(cs,customColor);
   customColor.addEventListener("input",function(){applyShellColor(customColor.value);});
 })();
 (function(){ let s="#c4cfa1"; try{ s=localStorage.getItem(COLOR_KEY)||"#c4cfa1"; }catch(e){} applyShellColor(s); })();
@@ -395,8 +248,6 @@ function applyShellColor(hex){
 /* ============ CDN + AVVIO ============ */
 const EJS_CDN="https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
 let romLoaded=false;
-let loaderInjected=false;
-
 function detectCore(fn){ const n=fn.toLowerCase(); if(n.endsWith(".gba"))return{core:"gba",label:"GAME BOY ADVANCE"}; if(n.endsWith(".gbc"))return{core:"gb",label:"GAME BOY COLOR"}; if(n.endsWith(".gb"))return{core:"gb",label:"GAME BOY"}; return{core:"gba",label:"ROM"}; }
 function setStatus(m){ statusEl.textContent=m||""; }
 
@@ -405,6 +256,7 @@ function startEmulator(file){
   tbName.textContent=file.name.replace(/\.(gb|gbc|gba|zip)$/i,"").slice(0,22); tbPlat.textContent=det.label;
   log("ROM: "+file.name+" -> core '"+det.core+"'","ok");
 
+  // Avviso se NON siamo isolati e il core è GBA (che richiede SAB)
   if(det.core==="gba" && !window.crossOriginIsolated){
     sabWarn.textContent="Attenzione: la pagina non è 'cross-origin isolated'. Sto registrando un service worker per abilitarla; se il gioco non parte, ricarica la pagina una volta.";
     log("GBA senza crossOriginIsolated: il core potrebbe non partire finché il SW non è attivo. Consigliato: ricarica.","warn");
@@ -415,354 +267,81 @@ function startEmulator(file){
   window.EJS_onGameStart=onGameStart;
   window.EJS_ready=function(){ log("EmulatorJS pronto (EJS_ready).","ok"); };
 
-  if(!loaderInjected){
-    loaderInjected=true;
-    log("Inietto loader.js…","warn");
-    const s=document.createElement("script"); s.src=EJS_CDN+"loader.js";
-    s.onload=function(){ log("loader.js scaricato. Avvio core… (attendere)","ok"); };
-    s.onerror=function(){ loaderInjected=false; showDiag(); log("FALLITO download loader.js dalla CDN.","err"); setStatus("Errore core. Apri LOG."); };
-    document.body.appendChild(s);
-  }
+  log("Inietto loader.js…","warn");
+  const s=document.createElement("script"); s.src=EJS_CDN+"loader.js";
+  s.onload=function(){ log("loader.js scaricato. Avvio core… (attendere)","ok"); };
+  s.onerror=function(){ showDiag(); log("FALLITO download loader.js dalla CDN.","err"); setStatus("Errore core. Apri LOG."); };
+  document.body.appendChild(s);
   setStatus("Avvio… core "+det.label); showDiag();
 }
-
 function onGameStart(){
-  romLoaded=true; loader.style.display="none"; diagEl.style.display="none";
+  romLoaded=true; loader.style.display="none";
   [btnSave,btnLoad,btnFull].forEach(b=>b.disabled=false);
   setStatus(""); log("GIOCO AVVIATO! Comandi attivi.","ok"); setTimeout(resizeCanvas,100);
 }
-
-pickBtn.addEventListener("click",()=>{ haptic(12); romInput.click(); });
+pickBtn.addEventListener("click",()=>romInput.click());
 romInput.addEventListener("change",(e)=>{ const f=e.target.files&&e.target.files[0]; if(!f){log("Nessun file.","warn");return;} startEmulator(f); });
 
-/* ============ BINDING INPUT MULTI-TOUCH + HAPTIC ============
-   Indici standard RetroArch / EmulatorJS:
-   0=B, 1=Y, 2=Select, 3=Start, 4=Up, 5=Down, 6=Left, 7=Right, 8=A, 9=X, 10=L, 11=R */
+/* ============ BINDING INPUT (robusto) ============
+   Metodo 1 (preferito): API diretta di EmulatorJS -> gameManager.simulateInput(player, buttonIndex, value)
+   Indici standard RetroArch: 0=B,1=Y,2=Select,3=Start,4=Up,5=Down,6=Left,7=Right,8=A,9=X...
+   Metodo 2 (fallback): eventi KeyboardEvent (mappa tasti EmulatorJS). */
 function ejs(){ return window.EJS_emulator||null; }
-const BTN_INDEX={ b:0, select:2, start:3, up:4, down:5, left:6, right:7, a:8, l:10, r:11 };
+const BTN_INDEX={ b:0, select:2, start:3, up:4, down:5, left:6, right:7, a:8 };
 const KEYMAP={
   up:{key:"ArrowUp",code:"ArrowUp",keyCode:38}, down:{key:"ArrowDown",code:"ArrowDown",keyCode:40},
   left:{key:"ArrowLeft",code:"ArrowLeft",keyCode:37}, right:{key:"ArrowRight",code:"ArrowRight",keyCode:39},
   a:{key:"x",code:"KeyX",keyCode:88}, b:{key:"z",code:"KeyZ",keyCode:90},
-  l:{key:"q",code:"KeyQ",keyCode:81}, r:{key:"w",code:"KeyW",keyCode:87},
   start:{key:"Enter",code:"Enter",keyCode:13}, select:{key:"Shift",code:"ShiftRight",keyCode:16,location:2}
 };
+function dispatchKey(type,def){ const ev=new KeyboardEvent(type,{key:def.key,code:def.code,keyCode:def.keyCode,which:def.keyCode,location:def.location||0,bubbles:true,cancelable:true}); try{Object.defineProperty(ev,"keyCode",{get:()=>def.keyCode});}catch(e){} try{Object.defineProperty(ev,"which",{get:()=>def.keyCode});}catch(e){} document.dispatchEvent(ev); const cv=document.querySelector("#game canvas"); if(cv)cv.dispatchEvent(ev); }
 
-const inputState={ a:false, b:false, l:false, r:false, start:false, select:false, up:false, down:false, left:false, right:false };
-
-function dispatchKey(type,def){
-  const ev=new KeyboardEvent(type,{key:def.key,code:def.code,keyCode:def.keyCode,which:def.keyCode,location:def.location||0,bubbles:true,cancelable:true});
-  try{Object.defineProperty(ev,"keyCode",{get:()=>def.keyCode});}catch(e){}
-  try{Object.defineProperty(ev,"which",{get:()=>def.keyCode});}catch(e){}
-  document.dispatchEvent(ev);
-  const cv=document.querySelector("#game canvas");
-  if(cv)cv.dispatchEvent(ev);
-}
-
+function press(name){ setInput(name,1); }
+function release(name){ setInput(name,0); }
 function setInput(name,val){
-  const isPressed = !!val;
-  if(inputState[name] === isPressed) return;
-  inputState[name] = isPressed;
-
   const e=ejs();
+  // Metodo 1: API diretta
   if(e && e.gameManager && typeof e.gameManager.simulateInput==="function" && (name in BTN_INDEX)){
-    try{ e.gameManager.simulateInput(0, BTN_INDEX[name], isPressed ? 1 : 0); return; }catch(err){}
+    try{ e.gameManager.simulateInput(0, BTN_INDEX[name], val); return; }catch(err){ /* fallback sotto */ }
   }
-  if(KEYMAP[name]) dispatchKey(isPressed?"keydown":"keyup", KEYMAP[name]);
+  // Metodo 2: eventi tastiera
+  if(KEYMAP[name]) dispatchKey(val?"keydown":"keyup", KEYMAP[name]);
 }
 
-function press(name, vibrateMs){
-  if(!inputState[name]) haptic(vibrateMs || 14);
-  setInput(name,1);
+function bindButton(id,name){ const btn=document.getElementById(id); if(!btn)return;
+  function onP(e){ if(e&&e.cancelable)e.preventDefault(); btn.classList.add("active"); press(name); }
+  function onR(e){ if(e&&e.cancelable)e.preventDefault(); btn.classList.remove("active"); release(name); }
+  btn.addEventListener("touchstart",onP,{passive:false}); btn.addEventListener("touchend",onR,{passive:false});
+  btn.addEventListener("touchcancel",onR,{passive:false}); btn.addEventListener("mousedown",onP);
+  btn.addEventListener("mouseup",onR); btn.addEventListener("mouseleave",onR);
 }
-function release(name){
-  setInput(name,0);
-}
+bindButton("btn-a","a"); bindButton("btn-b","b"); bindButton("btn-select","select"); bindButton("btn-start","start");
 
-/* Binding multi-touch indipendente per singoli pulsanti (L, R, Select, Start)
-   Usa e.targetTouches per verificare se c'è ancora almeno un dito su QUEL pulsante */
-function bindMultiTouchButton(id, name){
-  const btn = document.getElementById(id);
-  if(!btn) return;
-
-  function onTouchStart(e){
-    if(e && e.cancelable) e.preventDefault();
-    btn.classList.add("active");
-    press(name, 14); // Vibra esattamente come A e B
-  }
-  function onTouchEnd(e){
-    if(e && e.cancelable) e.preventDefault();
-    if(e.targetTouches && e.targetTouches.length > 0) return;
-    btn.classList.remove("active");
-    release(name);
-  }
-  function onMouseDown(e){
-    if(e && e.cancelable) e.preventDefault();
-    btn.classList.add("active");
-    press(name, 14);
-  }
-  function onMouseUp(e){
-    if(e && e.cancelable) e.preventDefault();
-    btn.classList.remove("active");
-    release(name);
-  }
-
-  btn.addEventListener("touchstart", onTouchStart, {passive:false});
-  btn.addEventListener("touchend", onTouchEnd, {passive:false});
-  btn.addEventListener("touchcancel", onTouchEnd, {passive:false});
-  btn.addEventListener("mousedown", onMouseDown);
-  btn.addEventListener("mouseup", onMouseUp);
-  btn.addEventListener("mouseleave", onMouseUp);
-}
-
-bindMultiTouchButton("btn-l", "l");
-bindMultiTouchButton("btn-r", "r");
-bindMultiTouchButton("btn-select", "select");
-bindMultiTouchButton("btn-start", "start");
-
-/* Binding avanzato per A e B:
-   Permette sia il tocco singolo/multiplo sia lo "slide" del pollice tra B e A
-   senza interferire con le altre dita su L, R o D-Pad */
-(function bindABButtons(){
-  const btnA = document.getElementById("btn-a");
-  const btnB = document.getElementById("btn-b");
-  const abZone = document.getElementById("ab-zone");
-  if(!btnA || !btnB || !abZone) return;
-
-  function checkHit(touch, el){
-    const r = el.getBoundingClientRect();
-    const pad = 6; // leggera tolleranza per facilitare combo B+A col pollice
-    return touch.clientX >= (r.left - pad) && touch.clientX <= (r.right + pad) &&
-           touch.clientY >= (r.top - pad)  && touch.clientY <= (r.bottom + pad);
-  }
-
-  function updateABFromTouches(e){
-    if(e && e.cancelable) e.preventDefault();
-    let aHit = false, bHit = false;
-    const touches = e.touches || [];
-    for(let i=0; i<touches.length; i++){
-      const t = touches[i];
-      if(checkHit(t, btnA)) aHit = true;
-      if(checkHit(t, btnB)) bHit = true;
-    }
-    if(aHit){ btnA.classList.add("active"); press("a", 14); }
-    else    { btnA.classList.remove("active"); release("a"); }
-
-    if(bHit){ btnB.classList.add("active"); press("b", 14); }
-    else    { btnB.classList.remove("active"); release("b"); }
-  }
-
-  [btnA, btnB, abZone].forEach(function(el){
-    el.addEventListener("touchstart", updateABFromTouches, {passive:false});
-    el.addEventListener("touchmove", updateABFromTouches, {passive:false});
-    el.addEventListener("touchend", updateABFromTouches, {passive:false});
-    el.addEventListener("touchcancel", updateABFromTouches, {passive:false});
-  });
-
-  // Fallback Mouse per test da PC
-  bindMultiTouchButton("btn-a", "a");
-  bindMultiTouchButton("btn-b", "b");
-})();
-
-/* D-Pad Multi-Touch con tracciamento touch.identifier:
-   Ignora completamente le dita posizionate su L, R, A o B */
-let clearDpadDirs = function(){};
 (function bindDpad(){
-  const dpad=document.getElementById("dpad"); if(!dpad)return;
-  const glow=document.getElementById("dpad-glow");
-  let activeTouchId = null;
-  let mouseDown = false;
-
-  function moveGlow(d){
-    if(!glow)return;
-    let gx=0,gy=0;
-    if(d.left)gx-=1; if(d.right)gx+=1; if(d.up)gy-=1; if(d.down)gy+=1;
-    const len=Math.hypot(gx,gy);
-    if(len>0){
-      gx/=len; gy/=len;
-      const R = dpad.offsetWidth * 0.27;
-      glow.style.transform="translate("+(gx*R)+"px,"+(gy*R)+"px)";
-    } else {
-      glow.style.transform="translate(0,0)";
-    }
-  }
-
-  function computeDir(cX,cY){
-    const rect=dpad.getBoundingClientRect();
-    const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
-    const dx=cX-cx, dy=cY-cy;
-    const dist=Math.hypot(dx,dy);
-    const res={up:false,down:false,left:false,right:false};
-    if(dist < rect.width*0.11) return res;
-    let ang=Math.atan2(dy,dx)*180/Math.PI;
-    if(ang<0) ang+=360;
-    const sec=Math.round(ang/45)%8;
-    switch(sec){
-      case 0:res.right=true;break;
-      case 1:res.right=true;res.down=true;break;
-      case 2:res.down=true;break;
-      case 3:res.down=true;res.left=true;break;
-      case 4:res.left=true;break;
-      case 5:res.left=true;res.up=true;break;
-      case 6:res.up=true;break;
-      case 7:res.up=true;res.right=true;break;
-    }
-    return res;
-  }
-
-  function applyDir(cX,cY){
-    const d=computeDir(cX,cY);
-    ["up","down","left","right"].forEach(function(k){
-      if(d[k] && !inputState[k]) press(k, 8);
-      if(!d[k] && inputState[k]) release(k);
-    });
-    moveGlow(d);
-  }
-
-  clearDpadDirs = function(){
-    activeTouchId = null;
-    mouseDown = false;
-    dpad.classList.remove("active");
-    ["up","down","left","right"].forEach(function(k){ release(k); });
-    moveGlow({up:false,down:false,left:false,right:false});
-  };
-
-  dpad.addEventListener("touchstart", function(e){
-    if(e && e.cancelable) e.preventDefault();
-    const t = e.changedTouches[0];
-    if(!t) return;
-    activeTouchId = t.identifier;
-    dpad.classList.add("active");
-    haptic(10);
-    applyDir(t.clientX, t.clientY);
-  }, {passive:false});
-
-  dpad.addEventListener("touchmove", function(e){
-    if(activeTouchId === null) return;
-    if(e && e.cancelable) e.preventDefault();
-    for(let i=0; i<e.touches.length; i++){
-      if(e.touches[i].identifier === activeTouchId){
-        applyDir(e.touches[i].clientX, e.touches[i].clientY);
-        break;
-      }
-    }
-  }, {passive:false});
-
-  function onTouchEnd(e){
-    if(activeTouchId === null) return;
-    if(e && e.cancelable) e.preventDefault();
-    for(let i=0; i<e.changedTouches.length; i++){
-      if(e.changedTouches[i].identifier === activeTouchId){
-        // Se c'è un altro dito ancora sul dpad, passa a quello, altrimenti rilascia
-        if(e.targetTouches && e.targetTouches.length > 0){
-          activeTouchId = e.targetTouches[0].identifier;
-          applyDir(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
-        } else {
-          clearDpadDirs();
-        }
-        break;
-      }
-    }
-  }
-
-  dpad.addEventListener("touchend", onTouchEnd, {passive:false});
-  dpad.addEventListener("touchcancel", onTouchEnd, {passive:false});
-
-  // Fallback Mouse
-  dpad.addEventListener("mousedown", function(e){
-    if(e && e.cancelable) e.preventDefault();
-    mouseDown = true;
-    dpad.classList.add("active");
-    applyDir(e.clientX, e.clientY);
-  });
-  dpad.addEventListener("mousemove", function(e){
-    if(!mouseDown) return;
-    if(e && e.cancelable) e.preventDefault();
-    applyDir(e.clientX, e.clientY);
-  });
-  dpad.addEventListener("mouseup", clearDpadDirs);
-  dpad.addEventListener("mouseleave", clearDpadDirs);
+  const dpad=document.getElementById("dpad"); if(!dpad)return; const glow=document.getElementById("dpad-glow");
+  let activeDir={up:false,down:false,left:false,right:false};
+  function moveGlow(d){ if(!glow)return; let gx=0,gy=0; if(d.left)gx-=1; if(d.right)gx+=1; if(d.up)gy-=1; if(d.down)gy+=1; const len=Math.hypot(gx,gy); if(len>0){gx/=len;gy/=len;const R=52;glow.style.transform="translate("+(gx*R)+"px,"+(gy*R)+"px)";}else glow.style.transform="translate(0,0)"; }
+  function computeDir(cX,cY){ const rect=dpad.getBoundingClientRect(); const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2; const dx=cX-cx,dy=cY-cy; const dist=Math.hypot(dx,dy); const res={up:false,down:false,left:false,right:false}; if(dist<rect.width*0.12)return res; let ang=Math.atan2(dy,dx)*180/Math.PI; if(ang<0)ang+=360; const sec=Math.round(ang/45)%8; switch(sec){case 0:res.right=true;break;case 1:res.right=true;res.down=true;break;case 2:res.down=true;break;case 3:res.down=true;res.left=true;break;case 4:res.left=true;break;case 5:res.left=true;res.up=true;break;case 6:res.up=true;break;case 7:res.up=true;res.right=true;break;} return res; }
+  function applyDir(cX,cY){ const d=computeDir(cX,cY); ["up","down","left","right"].forEach(function(k){ if(d[k]&&!activeDir[k])press(k); if(!d[k]&&activeDir[k])release(k); }); activeDir=d; moveGlow(d); }
+  function clearDirs(){ ["up","down","left","right"].forEach(function(k){ if(activeDir[k])release(k); }); activeDir={up:false,down:false,left:false,right:false}; moveGlow(activeDir); }
+  function onDown(e){ if(e&&e.cancelable)e.preventDefault(); dpad.classList.add("active"); const pt=(e.touches&&e.touches[0])||e; applyDir(pt.clientX,pt.clientY); }
+  function onMove(e){ if(!dpad.classList.contains("active"))return; if(e&&e.cancelable)e.preventDefault(); const pt=(e.touches&&e.touches[0])||e; applyDir(pt.clientX,pt.clientY); }
+  function onUp(e){ if(e&&e.cancelable)e.preventDefault(); dpad.classList.remove("active"); clearDirs(); }
+  dpad.addEventListener("touchstart",onDown,{passive:false}); dpad.addEventListener("touchmove",onMove,{passive:false});
+  dpad.addEventListener("touchend",onUp,{passive:false}); dpad.addEventListener("touchcancel",onUp,{passive:false});
+  dpad.addEventListener("mousedown",onDown); dpad.addEventListener("mousemove",onMove);
+  dpad.addEventListener("mouseup",onUp); dpad.addEventListener("mouseleave",onUp);
 })();
 
-/* Funzione globale di sicurezza: rilascia tutti i tasti in caso di interruzioni */
-function releaseAllInputs(){
-  clearDpadDirs();
-  ["a","b","l","r","start","select"].forEach(function(k){ release(k); });
-  document.querySelectorAll(".active").forEach(function(el){ el.classList.remove("active"); });
-}
-window.addEventListener("blur", releaseAllInputs);
-document.addEventListener("visibilitychange", function(){ if(document.hidden) releaseAllInputs(); });
+/* ============ SALVA / CARICA / FULLSCREEN ============ */
+btnSave.addEventListener("click", async function(){ const e=ejs(); if(!e)return; try{ const st=await e.gameManager.getState(); const key="crudogb_state_"+(window.EJS_gameName||"rom"); let bin="";const by=new Uint8Array(st);for(let i=0;i<by.length;i++)bin+=String.fromCharCode(by[i]); localStorage.setItem(key,btoa(bin)); log("Salvato.","ok"); }catch(err){ log("Errore salvataggio: "+err,"err"); } });
+btnLoad.addEventListener("click", async function(){ const e=ejs(); if(!e)return; try{ const key="crudogb_state_"+(window.EJS_gameName||"rom"); const b64=localStorage.getItem(key); if(!b64){log("Nessun salvataggio.","warn");return;} const bin=atob(b64);const by=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)by[i]=bin.charCodeAt(i); await e.gameManager.loadState(by); log("Caricato.","ok"); }catch(err){ log("Errore caricamento: "+err,"err"); } });
+btnFull.addEventListener("click", function(){ const wrap=document.getElementById("game-wrapper"); const target=document.querySelector("#game canvas")||wrap; const req=target.requestFullscreen||target.webkitRequestFullscreen||target.webkitEnterFullscreen; if(document.fullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}else if(req){req.call(target);} });
 
-/* ============ SALVA / CARICA / FULLSCREEN (dentro il MENU) ============ */
-function uint8ToBase64(u8){
-  const CHUNK = 0x2000;
-  const parts = [];
-  for(let i=0; i<u8.length; i+=CHUNK){
-    parts.push(String.fromCharCode.apply(null, u8.subarray(i, i+CHUNK)));
-  }
-  return btoa(parts.join(""));
-}
-
-btnSave.addEventListener("click", async function(){
-  haptic(14);
-  const e=ejs(); if(!e)return;
-  try{
-    const st=await e.gameManager.getState();
-    const key="crudogb_state_"+(window.EJS_gameName||"rom");
-    const b64=uint8ToBase64(new Uint8Array(st));
-    localStorage.setItem(key,b64);
-    log("Stato salvato con successo.","ok");
-    closeMenu();
-  }catch(err){ showDiag(); log("Errore salvataggio: "+err,"err"); }
-});
-
-btnLoad.addEventListener("click", async function(){
-  haptic(14);
-  const e=ejs(); if(!e)return;
-  try{
-    const key="crudogb_state_"+(window.EJS_gameName||"rom");
-    const b64=localStorage.getItem(key);
-    if(!b64){ showDiag(); log("Nessun salvataggio trovato per questa ROM.","warn"); return; }
-    const bin=atob(b64);
-    const by=new Uint8Array(bin.length);
-    for(let i=0;i<bin.length;i++) by[i]=bin.charCodeAt(i);
-    await e.gameManager.loadState(by);
-    log("Stato caricato con successo.","ok");
-    closeMenu();
-  }catch(err){ showDiag(); log("Errore caricamento: "+err,"err"); }
-});
-
-btnFull.addEventListener("click", function(){
-  haptic(14);
-  const wrap=document.getElementById("phone-screen");
-  const req=wrap.requestFullscreen||wrap.webkitRequestFullscreen||wrap.webkitEnterFullscreen;
-  if(document.fullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}
-  else if(req){req.call(wrap);}
-  closeMenu();
-});
-
-function resizeCanvas(){
-  const cv=document.querySelector("#game canvas");
-  if(!cv)return;
-  cv.style.width="100%";
-  cv.style.height="100%";
-  cv.style.imageRendering="pixelated";
-}
-window.addEventListener("resize", resizeCanvas);
-window.addEventListener("orientationchange", function(){
-  releaseAllInputs();
-  setTimeout(resizeCanvas, 150);
-});
-document.addEventListener("fullscreenchange", resizeCanvas);
-document.addEventListener("contextmenu", function(e){
-  if(e.target.closest("#controller")) e.preventDefault();
-});
-document.addEventListener("touchmove", function(e){
-  if(romLoaded && !e.target.closest(".menu-panel") && !e.target.closest("#diag") && e.cancelable){
-    e.preventDefault();
-  }
-}, {passive:false});
-document.addEventListener("gesturestart", function(e){ e.preventDefault(); });
+function resizeCanvas(){ const cv=document.querySelector("#game canvas"); if(!cv)return; cv.style.width="100%"; cv.style.height="100%"; cv.style.imageRendering="pixelated"; }
+window.addEventListener("resize",resizeCanvas); document.addEventListener("fullscreenchange",resizeCanvas);
+document.addEventListener("touchmove",function(e){ if(romLoaded&&e.cancelable)e.preventDefault(); },{passive:false});
+document.addEventListener("gesturestart",function(e){ e.preventDefault(); });
 </script>
 </body>
 </html>
