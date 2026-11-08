@@ -116,7 +116,7 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
   #sysbar { position: absolute; top: 8px; left: max(14px, env(safe-area-inset-left)); right: max(14px, env(safe-area-inset-right)); width: auto; margin: 0; z-index: 25; pointer-events: none; }
   #sysbar button { pointer-events: auto; }
   .shoulder-btn { width: 96px; height: 36px; }
-  
+
   .controls-top { position: absolute; inset: 0; display: flex; justify-content: space-between; align-items: center; padding: 36px max(18px, env(safe-area-inset-right)) 20px max(18px, env(safe-area-inset-left)); pointer-events: none; z-index: 10; }
   .dpad { pointer-events: auto; width: 150px; height: 150px; }
   .dpad::before { top: 20px; bottom: 20px; width: 42px; }
@@ -230,11 +230,12 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 <script>
 "use strict";
 
+const EJS_CDN = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
+
 /* ============ REGISTRAZIONE SERVICE WORKER STANDARD ============ */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
-      // Se crossOriginIsolated non è attivo, ricarichiamo la pagina per applicare gli header COOP/COEP
       if (!window.crossOriginIsolated && navigator.serviceWorker.controller) {
         window.location.reload();
       }
