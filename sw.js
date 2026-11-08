@@ -2,6 +2,9 @@ const CACHE_NAME = "crudogb-offline-v6";
 const OFFLINE_URLS = [
   "./index.html",
   "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./screenshot.png",
   "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/loader.js",
   "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/emulator.min.js",
   "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/emulator.min.css",
