@@ -9,16 +9,32 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/favicon.png",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Vector_templates_designed_for_Google_Play_and_App_Store.svg/512px-Vector_templates_designed_for_Google_Play_and_App_Store.svg.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/favicon.png",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Vector_templates_designed_for_Google_Play_and_App_Store.svg/192px-Vector_templates_designed_for_Google_Play_and_App_Store.svg.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Gamer_closeup.jpg/640px-Gamer_closeup.jpg",
+      "sizes": "640x427",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Schermata di gioco in modalità orizzontale"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Motorola_Moto_G_playing_a_game.jpg/360px-Motorola_Moto_G_playing_a_game.jpg",
+      "sizes": "360x640",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Schermata di gioco in modalità verticale"
     }
   ]
 }
