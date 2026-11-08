@@ -31,7 +31,7 @@ self.addEventListener("activate", (e) => {
   e.waitUntil(self.clients.claim());
 });
 
-// Aggiunge gli header di isolamento per consentire SharedArrayBuffer (Core GBA veloce)
+// Aggiunge gli header di isolamento per consentire SharedArrayBuffer (GBA veloce)
 function addIsolationHeaders(res) {
   if (!res || res.status === 0 || res.type === "opaque") return res;
   const h = new Headers(res.headers);
@@ -40,14 +40,13 @@ function addIsolationHeaders(res) {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
 }
 
-// Strategia Cache-First con fallback di rete (permette il gioco 100% offline)
+// Intercetta le richieste e carica preferenzialmente dalla cache per l'offline
 self.addEventListener("fetch", function(e){
   if (e.request.method !== "GET") return;
   e.respondWith((async function(){
     const cache = await caches.open(CACHE_NAME);
     const cached = await cache.match(e.request);
     if (cached) {
-      // Aggiorna la cache in background in modo silente
       fetch(e.request).then(netRes => {
         if (netRes && netRes.status === 200) cache.put(e.request, netRes.clone());
       }).catch(()=>{});
