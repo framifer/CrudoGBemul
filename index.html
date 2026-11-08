@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#111111">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.json">
 <title>CrudoGB's Emul - GB / GBC / GBA</title>
 <style>
 * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -29,26 +30,16 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 #status { font-size:10px; color:#8bac0f; min-height:14px; font-weight:bold; }
 #sab-warn { font-size:9px; color:#f2c11e; max-width:280px; line-height:1.35; }
 
-#diag { position:absolute; left:0; right:0; bottom:0; max-height:42%; overflow-y:auto; background:rgba(0,0,0,0.88); color:#7CFC00; font-size:9px; line-height:1.35; padding:6px 8px; z-index:30; display:none; text-align:left; white-space:pre-wrap; word-break:break-word; }
-#diag .err { color:#ff6b6b; } #diag .ok { color:#8bac0f; } #diag .warn{ color:#f2c11e; }
-
-#topbar { position:absolute; top:0; left:0; right:0; height:20px; background:rgba(0,0,0,0.55); color:#c4cfa1; font-size:9px; display:flex; align-items:center; justify-content:space-between; padding:0 8px; z-index:15; pointer-events:none; }
-#topbar .plat { color:#8bac0f; font-weight:bold; }
-
-/* Toast di conferma salvataggio/caricamento */
 #toast { position:absolute; top:26px; left:50%; transform:translateX(-50%); background:rgba(15,56,15,0.95); color:#e8f0d0; border:1px solid #8bac0f; padding:5px 12px; border-radius:12px; font-size:10px; font-weight:bold; z-index:35; opacity:0; pointer-events:none; transition:opacity 0.2s ease; }
 #toast.show { opacity:1; }
 
 #controller { flex:1; background-color:var(--gb-body); display:flex; flex-direction:column; justify-content:space-between; padding:18px 18px 34px; border-top:4px solid #555; transition:background-color 0.25s ease; touch-action:none; }
 
-/* Barra superiore: L a sinistra, MENU al centro, R a destra */
 #sysbar { display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:12px; gap:10px; }
-
 .sys-btn { background:#3a3a3a; color:#c4cfa1; font-family:inherit; font-size:11px; font-weight:bold; letter-spacing:1.5px; border:none; border-radius:8px; padding:10px 18px; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), 0 3px 5px rgba(0,0,0,0.5); cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
 .sys-btn:active { transform:translateY(1px); background:#222; }
 .sys-btn:disabled { opacity:0.4; }
 
-/* Pulsanti dorsali GBA L e R */
 .shoulder-btn { width:86px; height:38px; background:linear-gradient(145deg, #525252, #262626); color:#e8f0d0; font-family:inherit; font-size:16px; font-weight:bold; letter-spacing:1px; border:2px solid #1a1a1a; cursor:pointer; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.22), 0 4px 6px rgba(0,0,0,0.55); touch-action:none; -webkit-tap-highlight-color:transparent; transition:transform 0.04s ease, background 0.04s ease; }
 #btn-l { border-radius:16px 8px 14px 8px; }
 #btn-r { border-radius:8px 16px 8px 14px; }
@@ -56,9 +47,6 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 
 .controls-top { display:flex; justify-content:space-between; align-items:flex-start; width:100%; padding:0 4px; touch-action:none; }
 
-/* =========================================================================
-   1) D-PAD: STILE 1 (TONDO) E STILE 2 (CLASSICO A CROCE "+" CON FRECCE)
-   ========================================================================= */
 .dpad { position:relative; width:190px; height:190px; flex-shrink:0; border-radius:50%; background:radial-gradient(circle at 42% 38%, #2c2c2c, #0c0c0c 78%); box-shadow:0 6px 10px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.08), inset -3px -3px 8px rgba(0,0,0,0.9); touch-action:none; -webkit-tap-highlight-color:transparent; cursor:pointer; }
 .dpad::before, .dpad::after { content:""; position:absolute; background:linear-gradient(145deg, #3a3a3a, #161616); box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), inset -1px -1px 3px rgba(0,0,0,0.8); border-radius:11px; pointer-events:none; }
 .dpad::before { top:26px; bottom:26px; left:50%; width:52px; transform:translateX(-50%); }
@@ -68,106 +56,22 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 .dpad-glow { position:absolute; width:66px; height:66px; left:50%; top:50%; margin-left:-33px; margin-top:-33px; border-radius:50%; background:radial-gradient(circle, rgba(120,205,255,0.55) 0%, rgba(90,150,220,0.28) 45%, rgba(0,0,0,0) 72%); box-shadow:0 0 14px rgba(120,205,255,0.5), inset 0 0 8px rgba(0,0,0,0.6); pointer-events:none; opacity:0; transition:opacity 0.08s ease, transform 0.05s ease; z-index:5; }
 .dpad.active .dpad-glow { opacity:1; }
 
-/* Elementi interni per la modalità Croce "+" (nascosti quando è Tondo) */
 .dpad-arm, .dpad-center { display:none; pointer-events:none; }
 
-/* STILE CROCE "+" (attivato con la classe .cross-mode) */
-.dpad.cross-mode {
-  background: transparent !important;
-  box-shadow: none !important;
-  border-radius: 0;
-  filter: drop-shadow(0 5px 7px rgba(0,0,0,0.55));
-}
-.dpad.cross-mode::before,
-.dpad.cross-mode::after,
-.dpad.cross-mode .dpad-glow {
-  display: none !important;
-}
-.dpad.cross-mode .dpad-arm {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  background: linear-gradient(145deg, #383838, #1c1c1c);
-  color: #777;
-  font-size: 20px;
-  font-weight: bold;
-  border: 2px solid #111;
-  box-shadow: inset 1px 1px 2px rgba(255,255,255,0.18), inset -1px -1px 3px rgba(0,0,0,0.8);
-  transition: background 0.04s ease, color 0.04s ease, transform 0.04s ease, box-shadow 0.04s ease;
-  z-index: 2;
-}
-.dpad.cross-mode .arm-up {
-  top: 12px; left: 50%; width: 56px; height: 64px;
-  transform: translateX(-50%);
-  border-radius: 10px 10px 0 0;
-  border-bottom: none;
-}
-.dpad.cross-mode .arm-down {
-  bottom: 12px; left: 50%; width: 56px; height: 64px;
-  transform: translateX(-50%);
-  border-radius: 0 0 10px 10px;
-  border-top: none;
-}
-.dpad.cross-mode .arm-left {
-  left: 12px; top: 50%; width: 64px; height: 56px;
-  transform: translateY(-50%);
-  border-radius: 10px 0 0 10px;
-  border-right: none;
-}
-.dpad.cross-mode .arm-right {
-  right: 12px; top: 50%; width: 64px; height: 56px;
-  transform: translateY(-50%);
-  border-radius: 0 10px 10px 0;
-  border-left: none;
-}
-.dpad.cross-mode .dpad-center {
-  display: block;
-  position: absolute;
-  left: 50%; top: 50%;
-  width: 56px; height: 56px;
-  transform: translate(-50%, -50%);
-  background: #242424;
-  z-index: 3;
-}
-.dpad.cross-mode .dpad-center::after {
-  content: "";
-  position: absolute;
-  inset: 11px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 60% 60%, #2e2e2e, #141414);
-  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.85), inset -1px -1px 2px rgba(255,255,255,0.1);
-}
+.dpad.cross-mode { background: transparent !important; box-shadow: none !important; border-radius: 0; filter: drop-shadow(0 5px 7px rgba(0,0,0,0.55)); }
+.dpad.cross-mode::before, .dpad.cross-mode::after, .dpad.cross-mode .dpad-glow { display: none !important; }
+.dpad.cross-mode .dpad-arm { display: flex; justify-content: center; align-items: center; position: absolute; background: linear-gradient(145deg, #383838, #1c1c1c); color: #777; font-size: 20px; font-weight: bold; border: 2px solid #111; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.18), inset -1px -1px 3px rgba(0,0,0,0.8); transition: background 0.04s ease, color 0.04s ease, transform 0.04s ease, box-shadow 0.04s ease; z-index: 2; }
+.dpad.cross-mode .arm-up { top: 12px; left: 50%; width: 56px; height: 64px; transform: translateX(-50%); border-radius: 10px 10px 0 0; border-bottom: none; }
+.dpad.cross-mode .arm-down { bottom: 12px; left: 50%; width: 56px; height: 64px; transform: translateX(-50%); border-radius: 0 0 10px 10px; border-top: none; }
+.dpad.cross-mode .arm-left { left: 12px; top: 50%; width: 64px; height: 56px; transform: translateY(-50%); border-radius: 10px 0 0 10px; border-right: none; }
+.dpad.cross-mode .arm-right { right: 12px; top: 50%; width: 64px; height: 56px; transform: translateY(-50%); border-radius: 0 10px 10px 0; border-left: none; }
+.dpad.cross-mode .dpad-center { display: block; position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; transform: translate(-50%, -50%); background: #242424; z-index: 3; }
+.dpad.cross-mode .dpad-center::after { content: ""; position: absolute; inset: 11px; border-radius: 50%; background: radial-gradient(circle at 60% 60%, #2e2e2e, #141414); box-shadow: inset 2px 2px 4px rgba(0,0,0,0.85), inset -1px -1px 2px rgba(255,255,255,0.1); }
 
-/* Illuminazione e pressione della singola freccia premuta sulla Croce "+" */
-.dpad.cross-mode.dir-up .arm-up {
-  background: linear-gradient(145deg, #1b381b, #0f240f);
-  color: #9bbc0f;
-  text-shadow: 0 0 8px #8bac0f;
-  box-shadow: inset 0 4px 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45);
-  transform: translateX(-50%) translateY(2px);
-}
-.dpad.cross-mode.dir-down .arm-down {
-  background: linear-gradient(145deg, #1b381b, #0f240f);
-  color: #9bbc0f;
-  text-shadow: 0 0 8px #8bac0f;
-  box-shadow: inset 0 -4px 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45);
-  transform: translateX(-50%) translateY(-2px);
-}
-.dpad.cross-mode.dir-left .arm-left {
-  background: linear-gradient(145deg, #1b381b, #0f240f);
-  color: #9bbc0f;
-  text-shadow: 0 0 8px #8bac0f;
-  box-shadow: inset 4px 0 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45);
-  transform: translateY(-50%) translateX(2px);
-}
-.dpad.cross-mode.dir-right .arm-right {
-  background: linear-gradient(145deg, #1b381b, #0f240f);
-  color: #9bbc0f;
-  text-shadow: 0 0 8px #8bac0f;
-  box-shadow: inset -4px 0 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45);
-  transform: translateY(-50%) translateX(-2px);
-}
+.dpad.cross-mode.dir-up .arm-up { background: linear-gradient(145deg, #1b381b, #0f240f); color: #9bbc0f; text-shadow: 0 0 8px #8bac0f; box-shadow: inset 0 4px 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45); transform: translateX(-50%) translateY(2px); }
+.dpad.cross-mode.dir-down .arm-down { background: linear-gradient(145deg, #1b381b, #0f240f); color: #9bbc0f; text-shadow: 0 0 8px #8bac0f; box-shadow: inset 0 -4px 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45); transform: translateX(-50%) translateY(-2px); }
+.dpad.cross-mode.dir-left .arm-left { background: linear-gradient(145deg, #1b381b, #0f240f); color: #9bbc0f; text-shadow: 0 0 8px #8bac0f; box-shadow: inset 4px 0 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45); transform: translateY(-50%) translateX(2px); }
+.dpad.cross-mode.dir-right .arm-right { background: linear-gradient(145deg, #1b381b, #0f240f); color: #9bbc0f; text-shadow: 0 0 8px #8bac0f; box-shadow: inset -4px 0 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45); transform: translateY(-50%) translateX(-2px); }
 
 .action-buttons { position:relative; width:150px; height:200px; flex-shrink:0; margin-right:60px; filter:drop-shadow(3px 6px 5px rgba(0,0,0,0.3)); touch-action:none; }
 .btn-round-container { position:absolute; text-align:center; }
@@ -183,20 +87,18 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 .btn-pill:active, .btn-pill.active { transform:translate(1px,2px); background:#222; box-shadow:inset 1px 1px 4px rgba(0,0,0,0.9); }
 .btn-pill-label { font-size:12px; color:#306230; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:1px; pointer-events:none; }
 
-/* ---------- MODALE MENU ---------- */
 #menu-modal { position:absolute; inset:0; background:rgba(0,0,0,0.78); z-index:40; display:none; justify-content:center; align-items:center; }
 #menu-modal.open { display:flex; }
-.menu-panel { background:#1a1f18; border:2px solid #8bac0f; border-radius:12px; width:88%; max-width:345px; max-height:88%; overflow-y:auto; padding:15px; color:#c4cfa1; box-shadow:0 8px 30px rgba(0,0,0,0.7); touch-action:pan-y; }
-.menu-panel h2 { margin:0 0 10px; font-size:15px; color:#8bac0f; text-align:center; letter-spacing:1px; }
-.menu-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 6px; border-bottom:1px solid #2a3324; }
+.menu-panel { background:#1a1f18; border:2px solid #8bac0f; border-radius:12px; width:88%; max-width:340px; max-height:88%; overflow-y:auto; padding:18px; color:#c4cfa1; box-shadow:0 8px 30px rgba(0,0,0,0.7); touch-action:pan-y; }
+.menu-panel h2 { margin:0 0 12px; font-size:16px; color:#8bac0f; text-align:center; letter-spacing:1px; }
+.menu-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 6px; border-bottom:1px solid #2a3324; }
 .menu-row:last-child { border-bottom:none; }
 .menu-row span { font-size:11px; font-weight:bold; }
-.menu-act { background:#306230; color:#e8f0d0; border:none; border-radius:6px; font-family:inherit; font-size:11px; font-weight:bold; padding:7px 11px; cursor:pointer; white-space:nowrap; }
+.menu-act { background:#306230; color:#e8f0d0; border:none; border-radius:6px; font-family:inherit; font-size:11px; font-weight:bold; padding:8px 12px; cursor:pointer; white-space:nowrap; }
 .menu-act:active { transform:translateY(1px); }
 .menu-act:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
-.menu-close { display:block; width:100%; margin-top:12px; background:#5b1030; color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:bold; padding:11px; cursor:pointer; }
+.menu-close { display:block; width:100%; margin-top:14px; background:#5b1030; color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:bold; padding:11px; cursor:pointer; }
 
-/* 2) Griglia 8 colori classici prestabiliti (senza tavolozza) */
 #color-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; justify-items:center; padding:12px 4px 6px; }
 .swatch-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
 .swatch { width:38px; height:38px; border-radius:50%; border:2px solid rgba(255,255,255,0.35); box-shadow:inset 1px 1px 2px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.5); transition:transform 0.08s ease; }
@@ -206,70 +108,20 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 .submenu { display:none; }
 .submenu.open { display:block; }
 
-/* =========================================================================
-   MODALITÀ ORIZZONTALE (LANDSCAPE) PER CELLULARE
-   ========================================================================= */
 @media (orientation: landscape) {
-  #phone-screen {
-    max-width: 100vw;
-    max-height: 100vh;
-    width: 100vw;
-    height: 100vh;
-    border-radius: 18px;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-  }
-
-  #screen-container {
-    flex: 0 0 auto;
-    height: 100%;
-    padding: 44px 10px 10px;
-    background-color: transparent;
-    z-index: 5;
-  }
-
-  #game-wrapper {
-    height: min(78vh, 340px);
-    width: auto;
-    aspect-ratio: 3 / 2;
-  }
-
+  #phone-screen { max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh; border-radius: 18px; flex-direction: row; justify-content: center; align-items: center; }
+  #screen-container { flex: 0 0 auto; height: 100%; padding: 44px 10px 10px; background-color: transparent; z-index: 5; }
+  #game-wrapper { height: min(78vh, 340px); width: auto; aspect-ratio: 3 / 2; }
   #controller { display: contents; }
-
-  #sysbar {
-    position: absolute;
-    top: 8px;
-    left: max(14px, env(safe-area-inset-left));
-    right: max(14px, env(safe-area-inset-right));
-    width: auto;
-    margin: 0;
-    z-index: 25;
-    pointer-events: none;
-  }
+  #sysbar { position: absolute; top: 8px; left: max(14px, env(safe-area-inset-left)); right: max(14px, env(safe-area-inset-right)); width: auto; margin: 0; z-index: 25; pointer-events: none; }
   #sysbar button { pointer-events: auto; }
   .shoulder-btn { width: 96px; height: 36px; }
-
-  .controls-top {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 36px max(18px, env(safe-area-inset-right)) 20px max(18px, env(safe-area-inset-left));
-    pointer-events: none;
-    z-index: 10;
-  }
-
-  .dpad {
-    pointer-events: auto;
-    width: 150px;
-    height: 150px;
-  }
+  
+  .controls-top { position: absolute; inset: 0; display: flex; justify-content: space-between; align-items: center; padding: 36px max(18px, env(safe-area-inset-right)) 20px max(18px, env(safe-area-inset-left)); pointer-events: none; z-index: 10; }
+  .dpad { pointer-events: auto; width: 150px; height: 150px; }
   .dpad::before { top: 20px; bottom: 20px; width: 42px; }
   .dpad::after  { left: 20px; right: 20px; height: 42px; }
 
-  /* Proporzioni Croce "+" in orizzontale */
   .dpad.cross-mode .arm-up, .dpad.cross-mode .arm-down { width: 46px; height: 50px; }
   .dpad.cross-mode .arm-left, .dpad.cross-mode .arm-right { width: 50px; height: 46px; }
   .dpad.cross-mode .dpad-center { width: 46px; height: 46px; }
@@ -278,33 +130,17 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
   .dpad.cross-mode .arm-left { left: 8px; }
   .dpad.cross-mode .arm-right { right: 8px; }
 
-  .action-buttons {
-    pointer-events: auto;
-    width: 146px;
-    height: 160px;
-    margin-right: 0;
-  }
+  .action-buttons { pointer-events: auto; width: 146px; height: 160px; margin-right: 0; }
   .btn-b-container { left: 4px; top: 86px; }
   .btn-a-container { left: 74px; top: 18px; }
   .btn-round { width: 66px; height: 66px; font-size: 22px; }
 
-  .controls-bottom {
-    position: absolute;
-    left: max(24px, env(safe-area-inset-left));
-    right: max(24px, env(safe-area-inset-right));
-    bottom: 10px;
-    margin: 0;
-    justify-content: space-between;
-    pointer-events: none;
-    z-index: 15;
-  }
-
+  .controls-bottom { position: absolute; left: max(24px, env(safe-area-inset-left)); right: max(24px, env(safe-area-inset-right)); bottom: 10px; margin: 0; justify-content: space-between; pointer-events: none; z-index: 15; }
   .btn-pill-container { pointer-events: auto; transform: rotate(-18deg); }
   .btn-pill { width: 70px; height: 20px; }
   .btn-pill-label { font-size: 10px; margin-top: 4px; }
 }
 
-/* Adattamento per schermi verticali compatti */
 @media (orientation: portrait) and (max-height: 740px) {
   #screen-container { flex: 0 0 42%; padding: 8px; }
   #controller { padding: 10px 14px 18px; }
@@ -331,19 +167,16 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
       <div id="game"></div>
       <div id="loader">
         <h1>CrudoGB's Emul</h1>
-        <p>Carica un file ROM (.gb / .gbc / .gba / .rom / .zip) per Game Boy, Game Boy Color o Game Boy Advance.</p>
-        <button class="load-btn" id="pick-rom" type="button">CARICA GIOCHI / ROM</button>
-        <!-- Accetta anche .rom e .bin oltre a .gb, .gbc, .gba, .zip -->
+        <p>Carica un file ROM (.gb / .gbc / .gba / .rom / .zip) per iniziare a giocare offline.</p>
+        <button class="load-btn" id="pick-rom" type="button">CARICA ROM</button>
         <input type="file" id="rom-input" accept=".gb,.gbc,.gba,.rom,.bin,.zip,application/octet-stream">
         <div id="status"></div>
         <div id="sab-warn"></div>
       </div>
-      <div id="diag"></div>
     </div>
   </div>
 
   <div id="controller">
-    <!-- Barra superiore: L a sinistra, MENU al centro, R a destra -->
     <div id="sysbar">
       <button class="shoulder-btn" id="btn-l" type="button">L</button>
       <button class="sys-btn" id="btn-menu" type="button">MENU</button>
@@ -351,7 +184,6 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
     </div>
 
     <div class="controls-top">
-      <!-- D-Pad supporta sia Stile Tondo (glow) sia Stile Croce "+" con frecce -->
       <div class="dpad" id="dpad">
         <div class="dpad-glow" id="dpad-glow"></div>
         <div class="dpad-arm arm-up">▲</div>
@@ -378,17 +210,14 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
     <div class="menu-panel">
       <h2>MENU</h2>
       <div id="menu-main">
-        <div class="menu-row"><span>Salva partita (Locale)</span><button class="menu-act" id="btn-save" type="button" disabled>SALVA</button></div>
-        <div class="menu-row"><span>Carica partita (Locale)</span><button class="menu-act" id="btn-load" type="button" disabled>CARICA</button></div>
+        <div class="menu-row"><span>Salva partita</span><button class="menu-act" id="btn-save" type="button" disabled>SALVA</button></div>
+        <div class="menu-row"><span>Carica partita</span><button class="menu-act" id="btn-load" type="button" disabled>CARICA</button></div>
         <div class="menu-row"><span>Stile D-Pad</span><button class="menu-act" id="btn-dpad-style" type="button">TONDO</button></div>
         <div class="menu-row"><span>Cambia colore scocca</span><button class="menu-act" id="open-color" type="button">COLORE ▸</button></div>
         <div class="menu-row"><span>Schermo intero</span><button class="menu-act" id="btn-full" type="button" disabled>FULLSCREEN</button></div>
-        <div class="menu-row"><span>Gioca Offline (Cache)</span><button class="menu-act" id="btn-offline" type="button">SCARICA CORE</button></div>
-        <div class="menu-row"><span>Impostazioni Core</span><button class="menu-act" id="open-ejs" type="button">APRI</button></div>
-        <div class="menu-row"><span>Log diagnostico</span><button class="menu-act" id="open-log" type="button">LOG</button></div>
         <button class="menu-close" id="close-menu" type="button">CHIUDI</button>
       </div>
-      <!-- Sottomenu 8 Colori Classici Prestabiliti -->
+      <!-- Sottomenu 8 Colori Classici -->
       <div id="menu-color" class="submenu">
         <div class="menu-row"><span>8 Colori Classici</span><button class="menu-act" id="back-color" type="button">◂ INDIETRO</button></div>
         <div id="color-grid"></div>
@@ -400,129 +229,25 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 
 <script>
 "use strict";
-/* =========================================================================
-   CrudoGB's Emul — v5
-   1) Doppio D-Pad: Tondo con Glow oppure Classico a Croce "+" con frecce illuminate
-   2) 8 Colori Classici Prestabiliti (rimossa tavolozza custom)
-   3) Supporto universale .rom / .gb / .gbc / .gba con auto-detect binario dell'header
-   4) Salvataggi persistenti in locale (IndexedDB) per ogni singolo gioco (Stati + SRAM)
-   5) Modalità Offline Completa (Service Worker con Cache-First + Pre-caching Core)
-   ========================================================================= */
 
-const EJS_CDN = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
-
-/* ============ 0) SERVICE WORKER: OFFLINE CACHE + COOP/COEP ============
-   Nota importante: per funzionare offline quando riapri la pagina senza rete,
-   il file index.html va servito da HTTPS (es. GitHub Pages) o localhost.
-   Se registrato come Service Worker reale (es. sw.js) o su host statico,
-   mette in cache tutti i file dei core GB/GBC/GBA per l'uso offline. */
-(function setupOfflineServiceWorker(){
-  if (!window.isSecureContext || !('serviceWorker' in navigator)) return;
-
-  const swCode = `
-    const CACHE_NAME = "crudogb-offline-v5";
-    self.addEventListener("install", (e) => {
-      self.skipWaiting();
-    });
-    self.addEventListener("activate", (e) => {
-      e.waitUntil(self.clients.claim());
-    });
-    function addIsolationHeaders(res) {
-      if (!res || res.status === 0 || res.type === "opaque") return res;
-      const h = new Headers(res.headers);
-      h.set("Cross-Origin-Embedder-Policy", "require-corp");
-      h.set("Cross-Origin-Opener-Policy", "same-origin");
-      return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
-    }
-    self.addEventListener("fetch", function(e){
-      if (e.request.method !== "GET") return;
-      if (e.request.cache === "only-if-cached" && e.request.mode !== "same-origin") return;
-      e.respondWith((async function(){
-        const cache = await caches.open(CACHE_NAME);
-        const cached = await cache.match(e.request);
-        if (cached) {
-          fetch(e.request).then(netRes => {
-            if (netRes && netRes.status === 200) cache.put(e.request, netRes.clone());
-          }).catch(()=>{});
-          return addIsolationHeaders(cached.clone());
-        }
-        try {
-          const netRes = await fetch(e.request);
-          if (netRes && netRes.status === 200) {
-            cache.put(e.request, netRes.clone());
-          }
-          return addIsolationHeaders(netRes);
-        } catch(err) {
-          if (cached) return addIsolationHeaders(cached);
-          throw err;
-        }
-      })());
-    });
-  `;
-
-  try {
-    const blob = new Blob([swCode], { type: "text/javascript" });
-    const url = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(url).then(function(reg){
-      if (!navigator.serviceWorker.controller) {
-        reg.addEventListener("updatefound", function(){
-          const sw = reg.installing;
-          sw && sw.addEventListener("statechange", function(){
-            if (sw.state === "activated" && !window.crossOriginIsolated) window.location.reload();
-          });
-        });
+/* ============ REGISTRAZIONE SERVICE WORKER STANDARD ============ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      // Se crossOriginIsolated non è attivo, ricarichiamo la pagina per applicare gli header COOP/COEP
+      if (!window.crossOriginIsolated && navigator.serviceWorker.controller) {
+        window.location.reload();
       }
-    }).catch(function(){});
-  } catch(e){}
-})();
-
-/* Funzione per scaricare in anticipo nella Cache del browser i file core per giocare Offline */
-async function precacheEmulatorOffline(btn){
-  if(!('caches' in window)){
-    showToast("Cache non supportata");
-    return;
-  }
-  btn.disabled = true;
-  btn.textContent = "SCARICO...";
-  const urlsToCache = [
-    window.location.href,
-    EJS_CDN + "loader.js",
-    EJS_CDN + "emulator.min.js",
-    EJS_CDN + "emulator.min.css",
-    EJS_CDN + "cores/mgba-wasm.data",
-    EJS_CDN + "cores/mgba-legacy-wasm.data",
-    EJS_CDN + "cores/gambatte-wasm.data",
-    EJS_CDN + "cores/gambatte-legacy-wasm.data"
-  ];
-  try {
-    const cache = await caches.open("crudogb-offline-v5");
-    let okCount = 0;
-    for(let i=0; i<urlsToCache.length; i++){
-      try {
-        const res = await fetch(urlsToCache[i], { mode: "cors" });
-        if(res && res.ok){
-          await cache.put(urlsToCache[i], res);
-          okCount++;
-        }
-      } catch(e){ log("Skip cache: "+urlsToCache[i], "warn"); }
-    }
-    localStorage.setItem("crudogb_offline_ready", "1");
-    btn.textContent = "PRONTO ✓";
-    log("File Offline salvati in cache ("+okCount+"/"+urlsToCache.length+").", "ok");
-    showToast("Core salvati per Offline!");
-  } catch(err){
-    btn.disabled = false;
-    btn.textContent = "RIPROVA";
-    log("Errore cache offline: "+err, "err");
-  }
+    }).catch(function(err) {
+      console.log('SW registration failed: ', err);
+    });
+  });
 }
 
-/* ============ VIBRAZIONE (HAPTIC FEEDBACK) ============ */
 function haptic(ms){
   try { if (navigator.vibrate) navigator.vibrate(ms || 14); } catch(e){}
 }
 
-/* ============ TOAST NOTIFICA A SCHERMO ============ */
 const toastEl = document.getElementById("toast");
 let toastTimer = null;
 function showToast(msg){
@@ -533,33 +258,16 @@ function showToast(msg){
   toastTimer = setTimeout(()=>toastEl.classList.remove("show"), 1800);
 }
 
-/* ============ LOG A SCHERMO ============ */
-const diagEl = document.getElementById("diag");
-function log(msg, cls){ const l=document.createElement("div"); if(cls)l.className=cls; l.textContent="["+new Date().toLocaleTimeString()+"] "+msg; diagEl.appendChild(l); diagEl.scrollTop=diagEl.scrollHeight; }
-function showDiag(){ diagEl.style.display="block"; }
-window.addEventListener("error", function(e){ log("ERRORE JS: "+(e.message||e.type),"err"); });
-window.addEventListener("unhandledrejection", function(e){ log("PROMISE: "+(e.reason&&e.reason.message?e.reason.message:e.reason),"warn"); });
-log("CrudoGB's Emul v5 pronto.", "ok");
-
-/* ---- Riferimenti UI ---- */
 const romInput=document.getElementById("rom-input"), pickBtn=document.getElementById("pick-rom"),
   loader=document.getElementById("loader"), statusEl=document.getElementById("status"),
   sabWarn=document.getElementById("sab-warn"), tbName=document.getElementById("tb-name"),
   tbPlat=document.getElementById("tb-plat"), btnMenu=document.getElementById("btn-menu"),
   btnSave=document.getElementById("btn-save"), btnLoad=document.getElementById("btn-load"),
-  btnFull=document.getElementById("btn-full"), btnOffline=document.getElementById("btn-offline"),
-  btnDpadStyle=document.getElementById("btn-dpad-style"), dpadEl=document.getElementById("dpad"),
-  colorGrid=document.getElementById("color-grid"), menuModal=document.getElementById("menu-modal");
+  btnFull=document.getElementById("btn-full"), btnDpadStyle=document.getElementById("btn-dpad-style"),
+  dpadEl=document.getElementById("dpad"), colorGrid=document.getElementById("color-grid"),
+  menuModal=document.getElementById("menu-modal");
 
-if(localStorage.getItem("crudogb_offline_ready") === "1"){
-  btnOffline.textContent = "AGGIORNA ✓";
-}
-btnOffline.addEventListener("click", function(){
-  haptic(12);
-  precacheEmulatorOffline(btnOffline);
-});
-
-/* ============ 1) CAMBIO STILE D-PAD (TONDO vs CROCE "+") ============ */
+/* ============ 1) STILE D-PAD (TONDO vs CROCE "+") ============ */
 const DPAD_KEY = "crudogb_dpad_style";
 function applyDpadStyle(style){
   const isCross = (style === "cross");
@@ -596,14 +304,6 @@ document.getElementById("close-menu").addEventListener("click", closeMenu);
 document.getElementById("close-menu2").addEventListener("click", closeMenu);
 document.getElementById("open-color").addEventListener("click", function(){ haptic(10); menuMain.style.display="none"; menuColor.classList.add("open"); });
 document.getElementById("back-color").addEventListener("click", function(){ haptic(10); menuColor.classList.remove("open"); menuMain.style.display="block"; });
-document.getElementById("open-log").addEventListener("click", function(){ haptic(10); diagEl.style.display = (diagEl.style.display==="block"?"none":"block"); closeMenu(); });
-document.getElementById("open-ejs").addEventListener("click", function(){
-  haptic(10);
-  const e=ejs();
-  if(e&&e.menu&&e.menu.open){e.menu.open();closeMenu();}
-  else if(e&&e.toggleMenu){e.toggleMenu();closeMenu();}
-  else showToast("Avvia prima un gioco");
-});
 
 const COLOR_KEY="crudogb_shell_color";
 const SHELL_COLORS=[
@@ -618,7 +318,7 @@ const SHELL_COLORS=[
 ];
 function applyShellColor(hex){
   document.documentElement.style.setProperty("--gb-body",hex);
-  try{ localStorage.setItem(COLOR_KEY,hex); }catch(e){}
+  try{ localStorage.setItem(COLOR_KEY,hex); } catch(e){}
   document.querySelectorAll(".swatch").forEach(function(sw){
     sw.classList.toggle("selected", sw.dataset.color && sw.dataset.color.toLowerCase()===hex.toLowerCase());
   });
@@ -640,9 +340,7 @@ function applyShellColor(hex){
   applyShellColor(valid ? s : "#c4cfa1");
 })();
 
-/* ============ 4) DATABASE LOCALE SALVATAGGI (IndexedDB) ============
-   Permette salvataggi illimitati sul telefono per ogni singolo gioco,
-   senza il limite di 5MB di localStorage (fondamentale per i giochi GBA). */
+/* ============ 4) DATABASE LOCALE SALVATAGGI (IndexedDB) ============ */
 const DB_NAME = "CrudoGB_SaveDB";
 const DB_VERSION = 1;
 let saveDbPromise = null;
@@ -682,21 +380,16 @@ async function dbGet(storeName, key){
   });
 }
 
-/* ============ 3) RICONOSCIMENTO INTELLIGENTE .ROM / .GB / .GBC / .GBA ============
-   Anche se un file ha estensione generica ".rom" o ".bin", analizza i byte interni
-   dell'header Nintendo per capire se è un gioco GB, GBC o GBA! */
+/* ============ 3) DETECT .ROM / .GB / .GBC / .GBA ============ */
 async function detectCoreAndPlatform(file){
   const n = file.name.toLowerCase();
   if(n.endsWith(".gba")) return { core:"gba", label:"GAME BOY ADVANCE", ext:".gba" };
   if(n.endsWith(".gbc")) return { core:"gb",  label:"GAME BOY COLOR",   ext:".gbc" };
   if(n.endsWith(".gb"))  return { core:"gb",  label:"GAME BOY",         ext:".gb"  };
 
-  // Se è .rom, .bin o altro, ispezioniamo i primi 512 byte dell'header binario
   try {
     const slice = await file.slice(0, 512).arrayBuffer();
     const b = new Uint8Array(slice);
-
-    // Firma Nintendo Logo GB/GBC all'offset 0x0104 (CE ED 66 66 CC 0D 00 0B)
     const gbLogo = [0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B];
     let isGB = b.length >= 0x150;
     for(let i=0; i<gbLogo.length && isGB; i++){
@@ -710,7 +403,6 @@ async function detectCoreAndPlatform(file){
       return { core:"gb", label:"GAME BOY", ext:".gb" };
     }
 
-    // Firma Nintendo Logo GBA all'offset 0x0004 (24 FF AE 51 69 9A A2 21) o fixed 0x96 a 0xB2
     const gbaLogo = [0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21];
     let isGBA = b.length >= 0xC0;
     for(let i=0; i<gbaLogo.length && isGBA; i++){
@@ -719,8 +411,6 @@ async function detectCoreAndPlatform(file){
     if(isGBA || (b.length >= 0xB3 && b[0xB2] === 0x96)){
       return { core:"gba", label:"GAME BOY ADVANCE", ext:".gba" };
     }
-
-    // Fallback in base alla dimensione (> 4MB è quasi certamente GBA)
     if(file.size > 4 * 1024 * 1024){
       return { core:"gba", label:"GAME BOY ADVANCE", ext:".gba" };
     }
@@ -729,13 +419,12 @@ async function detectCoreAndPlatform(file){
   return { core:"gba", label:"GBA / ROM", ext:".gba" };
 }
 
-/* Chiave univoca e stabile per ogni gioco (basata sul nome pulito della ROM) */
 let currentGameKey = "default_rom";
 function makeGameKey(fileName){
   return "crudogb_rom_" + fileName.toLowerCase().replace(/\.(gb|gbc|gba|rom|bin|zip)$/i, "").replace(/[^a-z0-9_-]/g, "_");
 }
 
-/* ============ AVVIO EMULATORE ============ */
+/* ============ CONTROLLO EMULATORE ============ */
 let romLoaded = false;
 let loaderInjected = false;
 let sramTimer = null;
@@ -743,11 +432,10 @@ let sramTimer = null;
 function setStatus(m){ statusEl.textContent = m || ""; }
 
 async function startEmulator(file){
-  setStatus("Analisi ROM in corso...");
+  setStatus("Caricamento...");
   const det = await detectCoreAndPlatform(file);
   currentGameKey = makeGameKey(file.name);
 
-  // Creiamo un File/Blob con l'estensione corretta (.gb/.gbc/.gba) così EmulatorJS non si confonde con ".rom"
   const cleanBaseName = file.name.replace(/\.(gb|gbc|gba|rom|bin|zip)$/i, "");
   const normalizedName = file.name.toLowerCase().endsWith(".zip") ? file.name : (cleanBaseName + det.ext);
   const romBlob = new File([file], normalizedName, { type: "application/octet-stream" });
@@ -755,9 +443,7 @@ async function startEmulator(file){
 
   tbName.textContent = cleanBaseName.slice(0, 22);
   tbPlat.textContent = det.label;
-  log("ROM: " + file.name + " -> rilevato " + det.label + " (core '" + det.core + "')", "ok");
 
-  // Usiamo il core legacy se SharedArrayBuffer non è attivo (così il GBA parte anche senza COOP/COEP!)
   window.EJS_player = "#game";
   window.EJS_core = det.core;
   window.EJS_gameUrl = romURL;
@@ -766,18 +452,14 @@ async function startEmulator(file){
   window.EJS_gameName = cleanBaseName;
   window.EJS_threads = !!window.crossOriginIsolated;
   window.EJS_onGameStart = onGameStart;
-  window.EJS_ready = function(){ log("EmulatorJS pronto.", "ok"); };
 
   if(!loaderInjected){
     loaderInjected = true;
     const s = document.createElement("script");
     s.src = EJS_CDN + "loader.js";
-    s.onload = function(){ log("Core caricato. Avvio gioco...", "ok"); };
     s.onerror = function(){
       loaderInjected = false;
-      showDiag();
-      log("Impossibile caricare il core. Assicurati di aver scaricato i core o di essere connesso la prima volta.", "err");
-      setStatus("Errore rete/offline. Apri LOG.");
+      setStatus("Caricamento offline fallito. Riprova.");
     };
     document.body.appendChild(s);
   }
@@ -787,33 +469,24 @@ async function startEmulator(file){
 async function onGameStart(){
   romLoaded = true;
   loader.style.display = "none";
-  diagEl.style.display = "none";
   [btnSave, btnLoad, btnFull].forEach(b => b.disabled = false);
   setStatus("");
-  log("GIOCO AVVIATO! Chave salvataggio: " + currentGameKey, "ok");
   setTimeout(resizeCanvas, 100);
 
-  // Ripristina automaticamente eventuale salvataggio batteria (SRAM) o verifica se esiste uno stato salvato
   try {
     const savedSram = await dbGet("sram", currentGameKey);
     const e = ejs();
     if(savedSram && e && e.gameManager && e.gameManager.FS){
-      try {
-        const savePath = e.gameManager.getSaveFilePath && e.gameManager.getSaveFilePath();
-        if(savePath){
-          e.gameManager.FS.writeFile(savePath, savedSram);
-          e.gameManager.loadSaveFiles && e.gameManager.loadSaveFiles();
-          log("Batteria interna (SRAM) ripristinata.", "ok");
-        }
-      } catch(err){}
+      const savePath = e.gameManager.getSaveFilePath && e.gameManager.getSaveFilePath();
+      if(savePath){
+        e.gameManager.FS.writeFile(savePath, savedSram);
+        e.gameManager.loadSaveFiles && e.gameManager.loadSaveFiles();
+      }
     }
     const hasQuickState = await dbGet("states", currentGameKey);
-    if(hasQuickState){
-      showToast("Salvataggio disponibile nel MENU");
-    }
+    if(hasQuickState) showToast("Salvataggi caricati!");
   } catch(err){}
 
-  // Auto-sync periodico della batteria di gioco (SRAM) ogni 8 secondi
   clearInterval(sramTimer);
   sramTimer = setInterval(syncSramToLocal, 8000);
 }
@@ -824,9 +497,7 @@ async function syncSramToLocal(){
   try {
     if(typeof e.gameManager.getSaveFile === "function"){
       const sram = await e.gameManager.getSaveFile();
-      if(sram && sram.byteLength > 0){
-        await dbPut("sram", currentGameKey, sram);
-      }
+      if(sram && sram.byteLength > 0) await dbPut("sram", currentGameKey, sram);
     }
   } catch(err){}
 }
@@ -838,7 +509,7 @@ romInput.addEventListener("change", (e)=>{
   startEmulator(f);
 });
 
-/* ============ BINDING INPUT MULTI-TOUCH + HAPTIC ============ */
+/* ============ CONTROLLI INPUT MULTI-TOUCH ============ */
 function ejs(){ return window.EJS_emulator || null; }
 const BTN_INDEX = { b:0, select:2, start:3, up:4, down:5, left:6, right:7, a:8, l:10, r:11 };
 const KEYMAP = {
@@ -895,23 +566,9 @@ function bindMultiTouchButton(id, name){
     btn.classList.remove("active");
     release(name);
   }
-  function onMouseDown(e){
-    if(e && e.cancelable) e.preventDefault();
-    btn.classList.add("active");
-    press(name, 14);
-  }
-  function onMouseUp(e){
-    if(e && e.cancelable) e.preventDefault();
-    btn.classList.remove("active");
-    release(name);
-  }
-
   btn.addEventListener("touchstart", onTouchStart, {passive:false});
   btn.addEventListener("touchend", onTouchEnd, {passive:false});
   btn.addEventListener("touchcancel", onTouchEnd, {passive:false});
-  btn.addEventListener("mousedown", onMouseDown);
-  btn.addEventListener("mouseup", onMouseUp);
-  btn.addEventListener("mouseleave", onMouseUp);
 }
 
 bindMultiTouchButton("btn-l", "l");
@@ -919,7 +576,7 @@ bindMultiTouchButton("btn-r", "r");
 bindMultiTouchButton("btn-select", "select");
 bindMultiTouchButton("btn-start", "start");
 
-/* Binding multi-touch + slide per A e B */
+/* Multi-touch + slide per A e B */
 (function bindABButtons(){
   const btnA = document.getElementById("btn-a");
   const btnB = document.getElementById("btn-b");
@@ -955,27 +612,21 @@ bindMultiTouchButton("btn-start", "start");
     el.addEventListener("touchend", updateABFromTouches, {passive:false});
     el.addEventListener("touchcancel", updateABFromTouches, {passive:false});
   });
-
-  bindMultiTouchButton("btn-a", "a");
-  bindMultiTouchButton("btn-b", "b");
 })();
 
-/* D-Pad Multi-Touch con animazione frecce sia per Tondo che per Croce "+" */
+/* D-Pad con animazione frecce coordinata */
 let clearDpadDirs = function(){};
 (function bindDpad(){
   const dpad=document.getElementById("dpad"); if(!dpad)return;
   const glow=document.getElementById("dpad-glow");
   let activeTouchId = null;
-  let mouseDown = false;
 
   function updateVisuals(d){
-    // 1) Aggiorna classi per illuminare la singola freccia nella modalità Croce "+"
     dpad.classList.toggle("dir-up",    !!d.up);
     dpad.classList.toggle("dir-down",  !!d.down);
     dpad.classList.toggle("dir-left",  !!d.left);
     dpad.classList.toggle("dir-right", !!d.right);
 
-    // 2) Aggiorna il glow nella modalità Tondo
     if(!glow) return;
     let gx=0, gy=0;
     if(d.left)gx-=1; if(d.right)gx+=1; if(d.up)gy-=1; if(d.down)gy+=1;
@@ -1023,7 +674,6 @@ let clearDpadDirs = function(){};
 
   clearDpadDirs = function(){
     activeTouchId = null;
-    mouseDown = false;
     dpad.classList.remove("active");
     ["up","down","left","right"].forEach(function(k){ release(k); });
     updateVisuals({up:false,down:false,left:false,right:false});
@@ -1065,23 +715,8 @@ let clearDpadDirs = function(){};
       }
     }
   }
-
   dpad.addEventListener("touchend", onTouchEnd, {passive:false});
   dpad.addEventListener("touchcancel", onTouchEnd, {passive:false});
-
-  dpad.addEventListener("mousedown", function(e){
-    if(e && e.cancelable) e.preventDefault();
-    mouseDown = true;
-    dpad.classList.add("active");
-    applyDir(e.clientX, e.clientY);
-  });
-  dpad.addEventListener("mousemove", function(e){
-    if(!mouseDown) return;
-    if(e && e.cancelable) e.preventDefault();
-    applyDir(e.clientX, e.clientY);
-  });
-  dpad.addEventListener("mouseup", clearDpadDirs);
-  dpad.addEventListener("mouseleave", clearDpadDirs);
 })();
 
 function releaseAllInputs(){
@@ -1090,14 +725,9 @@ function releaseAllInputs(){
   document.querySelectorAll(".active").forEach(function(el){ el.classList.remove("active"); });
 }
 window.addEventListener("blur", releaseAllInputs);
-document.addEventListener("visibilitychange", function(){
-  if(document.hidden){
-    releaseAllInputs();
-    syncSramToLocal();
-  }
-});
+document.addEventListener("visibilitychange", function(){ if(document.hidden){ releaseAllInputs(); syncSramToLocal(); } });
 
-/* ============ 4) SALVA / CARICA IN LOCALE (IndexedDB + Fallback) ============ */
+/* ============ OPERAZIONI SALVATAGGIO / CARICAMENTO ============ */
 btnSave.addEventListener("click", async function(){
   haptic(14);
   const e = ejs();
@@ -1106,12 +736,9 @@ btnSave.addEventListener("click", async function(){
     const st = await e.gameManager.getState();
     await dbPut("states", currentGameKey, st);
     await syncSramToLocal();
-    log("Partita salvata in locale per: " + currentGameKey, "ok");
     showToast("Partita Salvata ✓");
     closeMenu();
   } catch(err){
-    showDiag();
-    log("Errore salvataggio: " + err, "err");
     showToast("Errore Salvataggio!");
   }
 });
@@ -1122,31 +749,14 @@ btnLoad.addEventListener("click", async function(){
   if(!e || !e.gameManager) return;
   try {
     let savedBytes = await dbGet("states", currentGameKey);
-
-    // Retro-compatibilità con eventuali salvataggi fatti nella v3/v4 in localStorage
-    if(!savedBytes){
-      const legacyKey = "crudogb_state_" + (window.EJS_gameName || "rom");
-      const b64 = localStorage.getItem(legacyKey);
-      if(b64){
-        const bin = atob(b64);
-        savedBytes = new Uint8Array(bin.length);
-        for(let i=0; i<bin.length; i++) savedBytes[i] = bin.charCodeAt(i);
-      }
-    }
-
     if(!savedBytes){
       showToast("Nessun salvataggio trovato");
-      log("Nessun salvataggio trovato per " + currentGameKey, "warn");
       return;
     }
-
     await e.gameManager.loadState(savedBytes);
-    log("Partita caricata per: " + currentGameKey, "ok");
     showToast("Partita Caricata ✓");
     closeMenu();
   } catch(err){
-    showDiag();
-    log("Errore caricamento: " + err, "err");
     showToast("Errore Caricamento!");
   }
 });
@@ -1173,13 +783,9 @@ window.addEventListener("orientationchange", function(){
   setTimeout(resizeCanvas, 150);
 });
 document.addEventListener("fullscreenchange", resizeCanvas);
-document.addEventListener("contextmenu", function(e){
-  if(e.target.closest("#controller")) e.preventDefault();
-});
+document.addEventListener("contextmenu", function(e){ if(e.target.closest("#controller")) e.preventDefault(); });
 document.addEventListener("touchmove", function(e){
-  if(romLoaded && !e.target.closest(".menu-panel") && !e.target.closest("#diag") && e.cancelable){
-    e.preventDefault();
-  }
+  if(romLoaded && !e.target.closest(".menu-panel") && e.cancelable) e.preventDefault();
 }, {passive:false});
 document.addEventListener("gesturestart", function(e){ e.preventDefault(); });
 </script>
