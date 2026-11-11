@@ -10,68 +10,67 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<title>CrudoGB's Emul - GB / GBC / GBA</title>
+<title>CrudoGB's Emul</title>
 <style>
 * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 :root { --gb-body: #c4cfa1; }
-html, body { height: 100%; width: 100%; overscroll-behavior: none; }
-body { background-color:#111; margin:0; padding:0; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:'Courier New', monospace; overflow:hidden; touch-action:none; }
+html, body { height: 100%; width: 100%; margin: 0; padding: 0; overscroll-behavior: none; background-color: #111; overflow: hidden; touch-action: none; font-family: 'Courier New', monospace; }
+body { display: flex; justify-content: center; align-items: center; }
 
-#phone-screen { width:100vw; max-width:420px; height:100dvh; max-height:920px; background-color:var(--gb-body); display:flex; flex-direction:column; border:2px solid #2a2a2a; border-radius:0; box-shadow:0 0 30px rgba(0,0,0,0.9), inset 0 0 8px rgba(255,255,255,0.15); overflow:hidden; position:relative; transition:background-color 0.25s ease; }
+#phone-screen { width: 100vw; height: 100dvh; background-color: var(--gb-body); display: flex; flex-direction: column; overflow: hidden; position: relative; transition: background-color 0.25s ease; }
 
-#screen-container { flex:0 0 46%; background-color:#222; display:flex; justify-content:center; align-items:center; padding:12px; position:relative; }
-#game-wrapper { position:relative; width:320px; height:320px; max-width:100%; aspect-ratio:1/1; margin:0 auto; border:4px solid #111; border-radius:8px; background-color:#000; box-shadow:inset 0 0 12px rgba(0,0,0,0.7); overflow:hidden; }
-#game { width:100%; height:100%; }
-#game canvas, canvas { display:block !important; width:100% !important; height:100% !important; image-rendering:pixelated; border-radius:4px; background:#000; }
+#screen-container { flex: 0 0 46%; background-color: #222; display: flex; justify-content: center; align-items: center; padding: 10px; position: relative; }
+#game-wrapper { position: relative; width: 100%; height: 100%; max-width: 340px; max-height: 340px; margin: 0 auto; border: 4px solid #111; border-radius: 8px; background-color: #000; box-shadow: inset 0 0 12px rgba(0,0,0,0.7); overflow: hidden; }
+#game { width: 100%; height: 100%; }
+#game canvas, canvas { display: block !important; width: 100% !important; height: 100% !important; image-rendering: pixelated; background: #000; }
 
-#loader { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:10px; background:#0d1a0d; color:#c4cfa1; text-align:center; padding:14px; z-index:20; }
-#loader h1 { margin:0; font-size:17px; letter-spacing:1px; color:#8bac0f; }
-#loader p { margin:0; font-size:11px; line-height:1.45; color:#9bbc0f; max-width:275px; }
-.load-btn { background:linear-gradient(145deg,#8bac0f,#306230); color:#0f380f; font-weight:bold; font-family:inherit; font-size:13px; padding:12px 18px; border:none; border-radius:8px; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.3), 0 3px 6px rgba(0,0,0,0.5); cursor:pointer; }
-.load-btn:active { transform:translateY(2px); }
-.install-btn { display:none; background:#1b6ec2; color:#fff; font-weight:bold; font-family:inherit; font-size:11px; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; }
-#rom-input { display:none; }
-#status { font-size:10px; color:#8bac0f; min-height:14px; font-weight:bold; }
+#loader { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; background: #0d1a0d; color: #c4cfa1; text-align: center; padding: 14px; z-index: 20; }
+#loader h1 { margin: 0; font-size: 18px; letter-spacing: 1px; color: #8bac0f; }
+#loader p { margin: 0; font-size: 11px; line-height: 1.45; color: #9bbc0f; max-width: 275px; }
 
-#topbar { position:absolute; top:0; left:0; right:0; height:20px; background:rgba(0,0,0,0.55); color:#c4cfa1; font-size:9px; display:flex; align-items:center; justify-content:space-between; padding:0 8px; z-index:15; pointer-events:none; }
-#topbar .plat { color:#8bac0f; font-weight:bold; }
+.load-btn { display: inline-block; background: linear-gradient(145deg,#8bac0f,#306230); color: #0f380f; font-weight: bold; font-family: inherit; font-size: 14px; padding: 14px 24px; border: none; border-radius: 8px; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.6); cursor: pointer; text-decoration: none; touch-action: manipulation; }
+.load-btn:active { transform: translateY(2px); }
 
-#toast { position:absolute; top:26px; left:50%; transform:translateX(-50%); background:rgba(15,56,15,0.95); color:#e8f0d0; border:1px solid #8bac0f; padding:5px 12px; border-radius:12px; font-size:10px; font-weight:bold; z-index:35; opacity:0; pointer-events:none; transition:opacity 0.2s ease; white-space:nowrap; }
-#toast.show { opacity:1; }
+.rom-file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; z-index: -1; }
 
-#controller { flex:1; background-color:var(--gb-body); display:flex; flex-direction:column; justify-content:space-between; padding:16px 18px 28px; border-top:4px solid #555; transition:background-color 0.25s ease; touch-action:none; }
+#status { font-size: 11px; color: #f2c11e; min-height: 16px; font-weight: bold; }
 
-#sysbar { display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:10px; gap:10px; }
-.sys-btn { background:#3a3a3a; color:#c4cfa1; font-family:inherit; font-size:11px; font-weight:bold; letter-spacing:1.5px; border:none; border-radius:8px; padding:10px 18px; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), 0 3px 5px rgba(0,0,0,0.5); cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-.sys-btn:active { transform:translateY(1px); background:#222; }
+#topbar { position: absolute; top: 0; left: 0; right: 0; height: 20px; background: rgba(0,0,0,0.55); color: #c4cfa1; font-size: 9px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; z-index: 15; pointer-events: none; }
+#topbar .plat { color: #8bac0f; font-weight: bold; }
 
-.shoulder-btn { width:86px; height:38px; background:linear-gradient(145deg, #525252, #262626); color:#e8f0d0; font-family:inherit; font-size:16px; font-weight:bold; letter-spacing:1px; border:2px solid #1a1a1a; cursor:pointer; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.22), 0 4px 6px rgba(0,0,0,0.55); touch-action:none; -webkit-tap-highlight-color:transparent; transition:transform 0.04s ease, background 0.04s ease; }
-#btn-l { border-radius:16px 8px 14px 8px; }
-#btn-r { border-radius:8px 16px 8px 14px; }
-.shoulder-btn:active, .shoulder-btn.active { transform:translateY(2px); background:linear-gradient(145deg, #2b2b2b, #151515); color:#8bac0f; box-shadow:inset 2px 2px 5px rgba(0,0,0,0.85); }
+#controller { flex: 1; background-color: var(--gb-body); display: flex; flex-direction: column; justify-content: space-between; padding: 14px 18px 26px; border-top: 4px solid #555; transition: background-color 0.25s ease; touch-action: none; }
 
-.controls-top { display:flex; justify-content:space-between; align-items:flex-start; width:100%; padding:0 4px; touch-action:none; }
+#sysbar { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px; gap: 10px; }
+.sys-btn { background: #3a3a3a; color: #c4cfa1; font-family: inherit; font-size: 11px; font-weight: bold; letter-spacing: 1.5px; border: none; border-radius: 8px; padding: 10px 18px; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.15), 0 3px 5px rgba(0,0,0,0.5); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.sys-btn:active { transform: translateY(1px); background: #222; }
 
-/* D-PAD TONDO + CROCE "+" */
-.dpad { position:relative; width:190px; height:190px; flex-shrink:0; border-radius:50%; background:radial-gradient(circle at 42% 38%, #2c2c2c, #0c0c0c 78%); box-shadow:0 6px 10px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.08), inset -3px -3px 8px rgba(0,0,0,0.9); touch-action:none; -webkit-tap-highlight-color:transparent; cursor:pointer; }
-.dpad::before, .dpad::after { content:""; position:absolute; background:linear-gradient(145deg, #3a3a3a, #161616); box-shadow:inset 1px 1px 2px rgba(255,255,255,0.15), inset -1px -1px 3px rgba(0,0,0,0.8); border-radius:11px; pointer-events:none; }
-.dpad::before { top:26px; bottom:26px; left:50%; width:52px; transform:translateX(-50%); }
-.dpad::after { left:26px; right:26px; top:50%; height:52px; transform:translateY(-50%); }
-.dpad.active { box-shadow:0 4px 6px rgba(0,0,0,0.5), inset 3px 3px 6px rgba(0,0,0,0.9); }
+.shoulder-btn { width: 86px; height: 38px; background: linear-gradient(145deg, #525252, #262626); color: #e8f0d0; font-family: inherit; font-size: 16px; font-weight: bold; letter-spacing: 1px; border: 2px solid #1a1a1a; cursor: pointer; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.22), 0 4px 6px rgba(0,0,0,0.55); touch-action: none; -webkit-tap-highlight-color: transparent; transition: transform 0.04s ease, background 0.04s ease; }
+#btn-l { border-radius: 16px 8px 14px 8px; }
+#btn-r { border-radius: 8px 16px 8px 14px; }
+.shoulder-btn:active, .shoulder-btn.active { transform: translateY(2px); background: linear-gradient(145deg, #2b2b2b, #151515); color: #8bac0f; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.85); }
 
-.dpad-glow { position:absolute; width:66px; height:66px; left:50%; top:50%; margin-left:-33px; margin-top:-33px; border-radius:50%; background:radial-gradient(circle, rgba(120,205,255,0.55) 0%, rgba(90,150,220,0.28) 45%, rgba(0,0,0,0) 72%); box-shadow:0 0 14px rgba(120,205,255,0.5), inset 0 0 8px rgba(0,0,0,0.6); pointer-events:none; opacity:0; transition:opacity 0.08s ease, transform 0.05s ease; z-index:5; }
-.dpad.active .dpad-glow { opacity:1; }
+.controls-top { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; padding: 0 4px; touch-action: none; }
 
-.dpad-arm, .dpad-center { display:none; pointer-events:none; }
+/* D-PAD TONDO + CROCE */
+.dpad { position: relative; width: 185px; height: 185px; flex-shrink: 0; border-radius: 50%; background: radial-gradient(circle at 42% 38%, #2c2c2c, #0c0c0c 78%); box-shadow: 0 6px 10px rgba(0,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.08), inset -3px -3px 8px rgba(0,0,0,0.9); touch-action: none; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+.dpad::before, .dpad::after { content: ""; position: absolute; background: linear-gradient(145deg, #3a3a3a, #161616); box-shadow: inset 1px 1px 2px rgba(255,255,255,0.15), inset -1px -1px 3px rgba(0,0,0,0.8); border-radius: 11px; pointer-events: none; }
+.dpad::before { top: 25px; bottom: 25px; left: 50%; width: 50px; transform: translateX(-50%); }
+.dpad::after { left: 25px; right: 25px; top: 50%; height: 50px; transform: translateY(-50%); }
+.dpad.active { box-shadow: 0 4px 6px rgba(0,0,0,0.5), inset 3px 3px 6px rgba(0,0,0,0.9); }
+
+.dpad-glow { position: absolute; width: 66px; height: 66px; left: 50%; top: 50%; margin-left: -33px; margin-top: -33px; border-radius: 50%; background: radial-gradient(circle, rgba(120,205,255,0.55) 0%, rgba(90,150,220,0.28) 45%, rgba(0,0,0,0) 72%); box-shadow: 0 0 14px rgba(120,205,255,0.5), inset 0 0 8px rgba(0,0,0,0.6); pointer-events: none; opacity: 0; transition: opacity 0.08s ease, transform 0.05s ease; z-index: 5; }
+.dpad.active .dpad-glow { opacity: 1; }
+
+.dpad-arm, .dpad-center { display: none; pointer-events: none; }
 
 .dpad.cross-mode { background: transparent !important; box-shadow: none !important; border-radius: 0; filter: drop-shadow(0 5px 7px rgba(0,0,0,0.55)); }
 .dpad.cross-mode::before, .dpad.cross-mode::after, .dpad.cross-mode .dpad-glow { display: none !important; }
 .dpad.cross-mode .dpad-arm { display: flex; justify-content: center; align-items: center; position: absolute; background: linear-gradient(145deg, #383838, #1c1c1c); color: #777; font-size: 20px; font-weight: bold; border: 2px solid #111; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.18), inset -1px -1px 3px rgba(0,0,0,0.8); transition: background 0.04s ease, color 0.04s ease, transform 0.04s ease, box-shadow 0.04s ease; z-index: 2; }
-.dpad.cross-mode .arm-up { top: 12px; left: 50%; width: 56px; height: 64px; transform: translateX(-50%); border-radius: 10px 10px 0 0; border-bottom: none; }
-.dpad.cross-mode .arm-down { bottom: 12px; left: 50%; width: 56px; height: 64px; transform: translateX(-50%); border-radius: 0 0 10px 10px; border-top: none; }
-.dpad.cross-mode .arm-left { left: 12px; top: 50%; width: 64px; height: 56px; transform: translateY(-50%); border-radius: 10px 0 0 10px; border-right: none; }
-.dpad.cross-mode .arm-right { right: 12px; top: 50%; width: 64px; height: 56px; transform: translateY(-50%); border-radius: 0 10px 10px 0; border-left: none; }
-.dpad.cross-mode .dpad-center { display: block; position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; transform: translate(-50%, -50%); background: #242424; z-index: 3; }
+.dpad.cross-mode .arm-up { top: 10px; left: 50%; width: 54px; height: 62px; transform: translateX(-50%); border-radius: 10px 10px 0 0; border-bottom: none; }
+.dpad.cross-mode .arm-down { bottom: 10px; left: 50%; width: 54px; height: 62px; transform: translateX(-50%); border-radius: 0 0 10px 10px; border-top: none; }
+.dpad.cross-mode .arm-left { left: 10px; top: 50%; width: 62px; height: 54px; transform: translateY(-50%); border-radius: 10px 0 0 10px; border-right: none; }
+.dpad.cross-mode .arm-right { right: 10px; top: 50%; width: 62px; height: 54px; transform: translateY(-50%); border-radius: 0 10px 10px 0; border-left: none; }
+.dpad.cross-mode .dpad-center { display: block; position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; transform: translate(-50%, -50%); background: #242424; z-index: 3; }
 .dpad.cross-mode .dpad-center::after { content: ""; position: absolute; inset: 11px; border-radius: 50%; background: radial-gradient(circle at 60% 60%, #2e2e2e, #141414); box-shadow: inset 2px 2px 4px rgba(0,0,0,0.85), inset -1px -1px 2px rgba(255,255,255,0.1); }
 
 .dpad.cross-mode.dir-up .arm-up { background: linear-gradient(145deg, #1b381b, #0f240f); color: #9bbc0f; text-shadow: 0 0 8px #8bac0f; box-shadow: inset 0 4px 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45); transform: translateX(-50%) translateY(2px); }
@@ -79,47 +78,47 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 .dpad.cross-mode.dir-left .arm-left { background: linear-gradient(145deg, #1b381b, #0f240f); color: #9bbc0f; text-shadow: 0 0 8px #8bac0f; box-shadow: inset 4px 0 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45); transform: translateY(-50%) translateX(2px); }
 .dpad.cross-mode.dir-right .arm-right { background: linear-gradient(145deg, #1b381b, #0f240f); color: #9bbc0f; text-shadow: 0 0 8px #8bac0f; box-shadow: inset -4px 0 8px rgba(0,0,0,0.9), 0 0 10px rgba(139,172,15,0.45); transform: translateY(-50%) translateX(-2px); }
 
-.action-buttons { position:relative; width:150px; height:200px; flex-shrink:0; margin-right:60px; filter:drop-shadow(3px 6px 5px rgba(0,0,0,0.3)); touch-action:none; }
-.btn-round-container { position:absolute; text-align:center; }
-.btn-b-container { left:4px; top:120px; }
-.btn-a-container { left:64px; top:40px; }
+.action-buttons { position: relative; width: 150px; height: 190px; flex-shrink: 0; margin-right: 40px; filter: drop-shadow(3px 6px 5px rgba(0,0,0,0.3)); touch-action: none; }
+.btn-round-container { position: absolute; text-align: center; }
+.btn-b-container { left: 4px; top: 110px; }
+.btn-a-container { left: 68px; top: 34px; }
 
-.btn-round { width:74px; height:74px; background:linear-gradient(145deg, #a72352, #6e1333); border-radius:50%; border:none; color:white; font-weight:bold; font-size:25px; cursor:pointer; box-shadow:inset 1px 2px 3px rgba(255,255,255,0.3), inset -2px -2px 5px rgba(0,0,0,0.6); transition:transform 0.04s ease; touch-action:none; -webkit-tap-highlight-color:transparent; }
-.btn-round:active, .btn-round.active { transform:translate(2px,3px); box-shadow:inset 2px 2px 7px rgba(0,0,0,0.8); background:#5b0f2a; }
+.btn-round { width: 72px; height: 72px; background: linear-gradient(145deg, #a72352, #6e1333); border-radius: 50%; border: none; color: white; font-weight: bold; font-size: 24px; cursor: pointer; box-shadow: inset 1px 2px 3px rgba(255,255,255,0.3), inset -2px -2px 5px rgba(0,0,0,0.6); transition: transform 0.04s ease; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.btn-round:active, .btn-round.active { transform: translate(2px,3px); box-shadow: inset 2px 2px 7px rgba(0,0,0,0.8); background: #5b0f2a; }
 
-.controls-bottom { display:flex; justify-content:center; gap:45px; margin-top:0; margin-bottom:14px; touch-action:none; }
-.btn-pill-container { text-align:center; transform:rotate(-25deg); filter:drop-shadow(2px 4px 3px rgba(0,0,0,0.3)); }
-.btn-pill { width:88px; height:23px; background:linear-gradient(145deg, #6e6e6e, #333); border-radius:12px; border:none; cursor:pointer; box-shadow:inset 1px 1px 2px rgba(255,255,255,0.2), inset -1px -1px 3px rgba(0,0,0,0.7); touch-action:none; -webkit-tap-highlight-color:transparent; }
-.btn-pill:active, .btn-pill.active { transform:translate(1px,2px); background:#222; box-shadow:inset 1px 1px 4px rgba(0,0,0,0.9); }
-.btn-pill-label { font-size:12px; color:#306230; text-align:center; margin-top:6px; font-weight:bold; letter-spacing:1px; pointer-events:none; }
+.controls-bottom { display: flex; justify-content: center; gap: 45px; margin-top: 0; margin-bottom: 10px; touch-action: none; }
+.btn-pill-container { text-align: center; transform: rotate(-25deg); filter: drop-shadow(2px 4px 3px rgba(0,0,0,0.3)); }
+.btn-pill { width: 84px; height: 22px; background: linear-gradient(145deg, #6e6e6e, #333); border-radius: 12px; border: none; cursor: pointer; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.2), inset -1px -1px 3px rgba(0,0,0,0.7); touch-action: none; -webkit-tap-highlight-color: transparent; }
+.btn-pill:active, .btn-pill.active { transform: translate(1px,2px); background: #222; box-shadow: inset 1px 1px 4px rgba(0,0,0,0.9); }
+.btn-pill-label { font-size: 11px; color: #306230; text-align: center; margin-top: 5px; font-weight: bold; letter-spacing: 1px; pointer-events: none; }
 
 /* MODALE MENU */
-#menu-modal { position:absolute; inset:0; background:rgba(0,0,0,0.78); z-index:40; display:none; justify-content:center; align-items:center; }
-#menu-modal.open { display:flex; }
-.menu-panel { background:#1a1f18; border:2px solid #8bac0f; border-radius:12px; width:88%; max-width:340px; max-height:88%; overflow-y:auto; padding:18px; color:#c4cfa1; box-shadow:0 8px 30px rgba(0,0,0,0.7); touch-action:pan-y; }
-.menu-panel h2 { margin:0 0 12px; font-size:16px; color:#8bac0f; text-align:center; letter-spacing:1px; }
-.menu-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 6px; border-bottom:1px solid #2a3324; }
-.menu-row:last-child { border-bottom:none; }
-.menu-row span { font-size:11px; font-weight:bold; }
-.menu-act { background:#306230; color:#e8f0d0; border:none; border-radius:6px; font-family:inherit; font-size:11px; font-weight:bold; padding:8px 12px; cursor:pointer; white-space:nowrap; }
-.menu-act:active { transform:translateY(1px); }
-.menu-act:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
-.menu-close { display:block; width:100%; margin-top:14px; background:#5b1030; color:#fff; border:none; border-radius:8px; font-family:inherit; font-size:12px; font-weight:bold; padding:11px; cursor:pointer; }
+#menu-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.78); z-index: 40; display: none; justify-content: center; align-items: center; }
+#menu-modal.open { display: flex; }
+.menu-panel { background: #1a1f18; border: 2px solid #8bac0f; border-radius: 12px; width: 88%; max-width: 340px; max-height: 88%; overflow-y: auto; padding: 18px; color: #c4cfa1; box-shadow: 0 8px 30px rgba(0,0,0,0.7); touch-action: pan-y; }
+.menu-panel h2 { margin: 0 0 12px; font-size: 16px; color: #8bac0f; text-align: center; letter-spacing: 1px; }
+.menu-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 6px; border-bottom: 1px solid #2a3324; }
+.menu-row:last-child { border-bottom: none; }
+.menu-row span { font-size: 11px; font-weight: bold; }
+.menu-act { display: inline-block; background: #306230; color: #e8f0d0; border: none; border-radius: 6px; font-family: inherit; font-size: 11px; font-weight: bold; padding: 8px 12px; cursor: pointer; white-space: nowrap; text-decoration: none; }
+.menu-act:active { transform: translateY(1px); }
+.menu-act:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.menu-close { display: block; width: 100%; margin-top: 14px; background: #5b1030; color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: bold; padding: 11px; cursor: pointer; }
 
-#color-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; justify-items:center; padding:12px 4px 6px; }
-.swatch-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
-.swatch { width:38px; height:38px; border-radius:50%; border:2px solid rgba(255,255,255,0.35); box-shadow:inset 1px 1px 2px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.5); transition:transform 0.08s ease; }
-.swatch-item:active .swatch { transform:scale(0.9); }
-.swatch.selected { border-color:#fff; box-shadow:0 0 0 3px #8bac0f, inset 1px 1px 2px rgba(255,255,255,0.4); }
-.swatch-label { font-size:9px; color:#c4cfa1; text-align:center; font-weight:bold; }
-.submenu { display:none; }
-.submenu.open { display:block; }
+#color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; justify-items: center; padding: 12px 4px 6px; }
+.swatch-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+.swatch { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35); box-shadow: inset 1px 1px 2px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.5); transition: transform 0.08s ease; }
+.swatch-item:active .swatch { transform: scale(0.9); }
+.swatch.selected { border-color: #fff; box-shadow: 0 0 0 3px #8bac0f, inset 1px 1px 2px rgba(255,255,255,0.4); }
+.swatch-label { font-size: 9px; color: #c4cfa1; text-align: center; font-weight: bold; }
+.submenu { display: none; }
+.submenu.open { display: block; }
 
 /* MODALITÀ ORIZZONTALE */
 @media (orientation: landscape) {
-  #phone-screen { max-width: 100vw; max-height: 100dvh; width: 100vw; height: 100dvh; border-radius: 0; flex-direction: row; justify-content: center; align-items: center; }
-  #screen-container { flex: 0 0 auto; height: 100%; padding: 44px 10px 10px; background-color: transparent; z-index: 5; }
-  #game-wrapper { height: min(78vh, 340px); width: auto; aspect-ratio: 3 / 2; }
+  #phone-screen { max-width: 100vw; max-height: 100dvh; width: 100vw; height: 100dvh; flex-direction: row; justify-content: center; align-items: center; }
+  #screen-container { flex: 0 0 auto; height: 100%; padding: 42px 10px 10px; background-color: transparent; z-index: 5; }
+  #game-wrapper { height: min(80vh, 340px); width: auto; aspect-ratio: 3 / 2; max-width: none; }
   #controller { display: contents; }
   #sysbar { position: absolute; top: 8px; left: max(14px, env(safe-area-inset-left)); right: max(14px, env(safe-area-inset-right)); width: auto; margin: 0; z-index: 25; pointer-events: none; }
   #sysbar button { pointer-events: auto; }
@@ -148,37 +147,21 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
   .btn-pill { width: 70px; height: 20px; }
   .btn-pill-label { font-size: 10px; margin-top: 4px; }
 }
-
-@media (orientation: portrait) and (max-height: 740px) {
-  #screen-container { flex: 0 0 42%; padding: 8px; }
-  #controller { padding: 10px 14px 18px; }
-  .dpad { width: 160px; height: 160px; }
-  .dpad::before { top: 22px; bottom: 22px; width: 44px; }
-  .dpad::after { left: 22px; right: 22px; height: 44px; }
-  .dpad.cross-mode .arm-up, .dpad.cross-mode .arm-down { width: 48px; height: 52px; }
-  .dpad.cross-mode .arm-left, .dpad.cross-mode .arm-right { width: 52px; height: 48px; }
-  .dpad.cross-mode .dpad-center { width: 48px; height: 48px; }
-  .action-buttons { height: 170px; margin-right: 30px; }
-  .btn-b-container { left: 4px; top: 96px; }
-  .btn-a-container { left: 60px; top: 28px; }
-  .btn-round { width: 66px; height: 66px; font-size: 22px; }
-  .controls-bottom { margin-bottom: 10px; }
-}
 </style>
 </head>
 <body>
+<!-- Input file invisibile collegato alla label -->
+<input type="file" id="rom-input" class="rom-file-input" accept="*/*">
+
 <div id="phone-screen">
   <div id="screen-container">
     <div id="game-wrapper">
       <div id="topbar"><span id="tb-name">—</span><span class="plat" id="tb-plat"></span></div>
-      <div id="toast"></div>
       <div id="game"></div>
       <div id="loader">
         <h1>CrudoGB's Emul</h1>
-        <p>Carica un file ROM (.gb / .gbc / .gba / .rom / .zip) dal tuo telefono.</p>
-        <button class="load-btn" id="pick-rom" type="button">CARICA ROM</button>
-        <button class="install-btn" id="install-pwa" type="button">📲 INSTALLA COME APP</button>
-        <input type="file" id="rom-input" accept=".gb,.gbc,.gba,.rom,.bin,.zip,application/octet-stream,*/*">
+        <p>Seleziona un file ROM (.gb, .gbc, .gba, .rom, .zip) per giocare.</p>
+        <label for="rom-input" class="load-btn" id="pick-rom">CARICA ROM</label>
         <div id="status"></div>
       </div>
     </div>
@@ -218,12 +201,11 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
     <div class="menu-panel">
       <h2>MENU</h2>
       <div id="menu-main">
-        <div class="menu-row"><span>Cambia Gioco / ROM</span><button class="menu-act" id="btn-change-rom" type="button">CAMBIA</button></div>
+        <div class="menu-row"><span>Carica altra ROM</span><label for="rom-input" class="menu-act" id="btn-change-rom">SCEGLI FILE</label></div>
         <div class="menu-row"><span>Salva partita</span><button class="menu-act" id="btn-save" type="button" disabled>SALVA</button></div>
         <div class="menu-row"><span>Carica partita</span><button class="menu-act" id="btn-load" type="button" disabled>CARICA</button></div>
         <div class="menu-row"><span>Stile D-Pad</span><button class="menu-act" id="btn-dpad-style" type="button">TONDO</button></div>
         <div class="menu-row"><span>Colore scocca</span><button class="menu-act" id="open-color" type="button">COLORE ▸</button></div>
-        <div class="menu-row"><span>Schermo intero (Senza Barra)</span><button class="menu-act" id="btn-full" type="button">FULLSCREEN</button></div>
         <button class="menu-close" id="close-menu" type="button">CHIUDI</button>
       </div>
       <div id="menu-color" class="submenu">
@@ -240,59 +222,22 @@ body { background-color:#111; margin:0; padding:0; display:flex; justify-content
 
 const EJS_CDN = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
 
-/* ============ 0) REGISTRAZIONE SERVICE WORKER + INSTALLAZIONE PWA ============ */
+/* ============ SERVICE WORKER REGISTRATION ============ */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function() {
     navigator.serviceWorker.register("./sw.js").catch(function(){});
   });
 }
 
-let deferredPrompt = null;
-const installBtn = document.getElementById("install-pwa");
-window.addEventListener("beforeinstallprompt", function(e) {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (installBtn) installBtn.style.display = "inline-block";
-});
-if (installBtn) {
-  installBtn.addEventListener("click", async function() {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    installBtn.style.display = "none";
-  });
-}
-
-/* Funzione che manda l'app in Fullscreen nativo nascondendo la barra in alto */
-function enterAppFullscreen() {
-  const docEl = document.documentElement;
-  const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
-  if (req && !document.fullscreenElement && !document.webkitFullscreenElement) {
-    try { req.call(docEl).catch(function(){}); } catch(e){}
-  }
-}
-
 function haptic(ms){
   try { if (navigator.vibrate) navigator.vibrate(ms || 14); } catch(e){}
 }
 
-const toastEl = document.getElementById("toast");
-let toastTimer = null;
-function showToast(msg){
-  if(!toastEl) return;
-  toastEl.textContent = msg;
-  toastEl.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>toastEl.classList.remove("show"), 2000);
-}
-
-const romInput=document.getElementById("rom-input"), pickBtn=document.getElementById("pick-rom"),
+const romInput=document.getElementById("rom-input"),
   loader=document.getElementById("loader"), statusEl=document.getElementById("status"),
   tbName=document.getElementById("tb-name"), tbPlat=document.getElementById("tb-plat"),
   btnMenu=document.getElementById("btn-menu"), btnSave=document.getElementById("btn-save"),
-  btnLoad=document.getElementById("btn-load"), btnFull=document.getElementById("btn-full"),
-  btnChangeRom=document.getElementById("btn-change-rom"), btnDpadStyle=document.getElementById("btn-dpad-style"),
+  btnLoad=document.getElementById("btn-load"), btnDpadStyle=document.getElementById("btn-dpad-style"),
   dpadEl=document.getElementById("dpad"), colorGrid=document.getElementById("color-grid"),
   menuModal=document.getElementById("menu-modal");
 
@@ -333,11 +278,6 @@ document.getElementById("close-menu").addEventListener("click", closeMenu);
 document.getElementById("close-menu2").addEventListener("click", closeMenu);
 document.getElementById("open-color").addEventListener("click", function(){ haptic(10); menuMain.style.display="none"; menuColor.classList.add("open"); });
 document.getElementById("back-color").addEventListener("click", function(){ haptic(10); menuColor.classList.remove("open"); menuMain.style.display="block"; });
-btnChangeRom.addEventListener("click", function(){
-  haptic(12);
-  closeMenu();
-  window.location.reload();
-});
 
 const COLOR_KEY="crudogb_shell_color";
 const SHELL_COLORS=[
@@ -374,7 +314,7 @@ function applyShellColor(hex){
   applyShellColor(valid ? s : "#c4cfa1");
 })();
 
-/* ============ 3) DATABASE LOCALE SALVATAGGI (IndexedDB) ============ */
+/* ============ 3) DATABASE SALVATAGGI (IndexedDB) ============ */
 const DB_NAME = "CrudoGB_SaveDB";
 const DB_VERSION = 1;
 let saveDbPromise = null;
@@ -414,12 +354,12 @@ async function dbGet(storeName, key){
   });
 }
 
-/* ============ 4) RICONOSCIMENTO INTELLIGENTE .ROM / .GB / .GBC / .GBA ============ */
+/* ============ 4) RILEVAMENTO TIPO DI GIOCO (GB/GBC/GBA) ============ */
 async function detectCoreAndPlatform(file){
   const n = file.name.toLowerCase();
-  if(n.endsWith(".gba")) return { core:"gba", label:"GAME BOY ADVANCE", ext:".gba" };
-  if(n.endsWith(".gbc")) return { core:"gb",  label:"GAME BOY COLOR",   ext:".gbc" };
-  if(n.endsWith(".gb"))  return { core:"gb",  label:"GAME BOY",         ext:".gb"  };
+  if(n.endsWith(".gba")) return { core:"gba", label:"GAME BOY ADVANCE" };
+  if(n.endsWith(".gbc")) return { core:"gb",  label:"GAME BOY COLOR" };
+  if(n.endsWith(".gb"))  return { core:"gb",  label:"GAME BOY" };
 
   try {
     const slice = await file.slice(0, 512).arrayBuffer();
@@ -432,9 +372,9 @@ async function detectCoreAndPlatform(file){
     if(isGB){
       const cgbFlag = b[0x143];
       if(cgbFlag === 0x80 || cgbFlag === 0xC0){
-        return { core:"gb", label:"GAME BOY COLOR", ext:".gbc" };
+        return { core:"gb", label:"GAME BOY COLOR" };
       }
-      return { core:"gb", label:"GAME BOY", ext:".gb" };
+      return { core:"gb", label:"GAME BOY" };
     }
 
     const gbaLogo = [0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21];
@@ -443,14 +383,14 @@ async function detectCoreAndPlatform(file){
       if(b[0x04 + i] !== gbaLogo[i]) isGBA = false;
     }
     if(isGBA || (b.length >= 0xB3 && b[0xB2] === 0x96)){
-      return { core:"gba", label:"GAME BOY ADVANCE", ext:".gba" };
+      return { core:"gba", label:"GAME BOY ADVANCE" };
     }
     if(file.size > 4 * 1024 * 1024){
-      return { core:"gba", label:"GAME BOY ADVANCE", ext:".gba" };
+      return { core:"gba", label:"GAME BOY ADVANCE" };
     }
   } catch(e){}
 
-  return { core:"gba", label:"GBA / ROM", ext:".gba" };
+  return { core:"gba", label:"GBA / ROM" };
 }
 
 let currentGameKey = "default_rom";
@@ -458,54 +398,58 @@ function makeGameKey(fileName){
   return "crudogb_rom_" + fileName.toLowerCase().replace(/\.(gb|gbc|gba|rom|bin|zip)$/i, "").replace(/[^a-z0-9_-]/g, "_");
 }
 
-/* ============ 5) AVVIO EMULATORE (SENZA BLOCCO SU "AVVIO...") ============ */
+/* ============ 5) AVVIO EMULATORE E CARICAMENTO FILE ============ */
 let romLoaded = false;
 let sramTimer = null;
+let currentBlobUrl = null;
 
 function setStatus(m){ statusEl.textContent = m || ""; }
 
 async function startEmulator(file){
-  setStatus("Lettura ROM...");
-  const det = await detectCoreAndPlatform(file);
-  currentGameKey = makeGameKey(file.name);
+  try {
+    closeMenu();
+    setStatus("Avvio " + file.name + "...");
+    const det = await detectCoreAndPlatform(file);
+    currentGameKey = makeGameKey(file.name);
 
-  // Leggiamo l'intero ArrayBuffer della ROM in memoria e creiamo un Blob pulito:
-  // evita qualsiasi errore di permessi file su Android WebView/Chrome!
-  const arrayBuf = await file.arrayBuffer();
-  const romBlob = new Blob([arrayBuf], { type: "application/octet-stream" });
-  const romURL = URL.createObjectURL(romBlob);
+    const cleanBaseName = file.name.replace(/\.(gb|gbc|gba|rom|bin|zip)$/i, "");
+    tbName.textContent = cleanBaseName.slice(0, 22);
+    tbPlat.textContent = det.label;
 
-  const cleanBaseName = file.name.replace(/\.(gb|gbc|gba|rom|bin|zip)$/i, "");
-  tbName.textContent = cleanBaseName.slice(0, 22);
-  tbPlat.textContent = det.label;
+    if (currentBlobUrl) {
+      URL.revokeObjectURL(currentBlobUrl);
+    }
+    currentBlobUrl = URL.createObjectURL(file);
 
-  // Svuota e ricrea il contenitore #game
-  const gameEl = document.getElementById("game");
-  gameEl.innerHTML = "";
+    // Se un'istanza è già attiva, riavviamo l'applicazione
+    if (window.EJS_emulator) {
+      window.location.reload();
+      return;
+    }
 
-  // Nascondiamo subito il loader così vedi il caricamento nativo e cliccabile di EmulatorJS
-  // (su mobile l'audio WebAudio richiede a volte un tap sul canvas per partire!)
-  loader.style.display = "none";
+    loader.style.display = "none";
 
-  window.EJS_player = "#game";
-  window.EJS_core = det.core;
-  window.EJS_gameUrl = romURL;
-  window.EJS_pathtodata = EJS_CDN;
-  window.EJS_startOnLoaded = true;
-  window.EJS_gameName = cleanBaseName;
-  // CRITICO PER ANDROID: forziamo EJS_threads = false!
-  // Così usa sempre il core compatibile che NON si blocca mai per SharedArrayBuffer
-  window.EJS_threads = false;
-  window.EJS_VirtualGamepadSettings = { enabled: false };
-  window.EJS_onGameStart = onGameStart;
+    window.EJS_player = "#game";
+    window.EJS_core = det.core;
+    window.EJS_gameUrl = currentBlobUrl;
+    window.EJS_pathtodata = EJS_CDN;
+    window.EJS_startOnLoaded = true;
+    window.EJS_gameName = cleanBaseName;
+    window.EJS_threads = false;
+    window.EJS_VirtualGamepadSettings = { enabled: false };
+    window.EJS_onGameStart = onGameStart;
 
-  const s = document.createElement("script");
-  s.src = EJS_CDN + "loader.js";
-  s.onerror = function(){
+    const s = document.createElement("script");
+    s.src = EJS_CDN + "loader.js";
+    s.onerror = function(){
+      loader.style.display = "flex";
+      setStatus("Impossibile caricare il motore di gioco.");
+    };
+    document.body.appendChild(s);
+  } catch (err) {
     loader.style.display = "flex";
-    setStatus("Errore rete: apri l'app connesso almeno la prima volta.");
-  };
-  document.body.appendChild(s);
+    setStatus("Errore: " + err.message);
+  }
 }
 
 async function onGameStart(){
@@ -515,7 +459,6 @@ async function onGameStart(){
   setStatus("");
   setTimeout(resizeCanvas, 120);
 
-  // Nasconde eventuali controlli touch sovrapposti di EmulatorJS
   const styleHide = document.createElement("style");
   styleHide.textContent = ".ejs_virtual_gamepad, .ejs_menu_button, .ejs_context_menu { display:none !important; }";
   document.head.appendChild(styleHide);
@@ -530,8 +473,6 @@ async function onGameStart(){
         e.gameManager.loadSaveFiles && e.gameManager.loadSaveFiles();
       }
     }
-    const hasQuickState = await dbGet("states", currentGameKey);
-    if(hasQuickState) showToast("Salvataggio pronto nel MENU");
   } catch(err){}
 
   clearInterval(sramTimer);
@@ -549,19 +490,14 @@ async function syncSramToLocal(){
   } catch(err){}
 }
 
-pickBtn.addEventListener("click", ()=>{
-  haptic(12);
-  enterAppFullscreen();
-  romInput.click();
-});
-romInput.addEventListener("change", (e)=>{
+romInput.addEventListener("change", function(e){
   const f = e.target.files && e.target.files[0];
   if(!f) return;
-  enterAppFullscreen();
+  haptic(14);
   startEmulator(f);
 });
 
-/* ============ CONTROLLI INPUT MULTI-TOUCH ============ */
+/* ============ CONTROLLI MULTI-TOUCH ============ */
 function ejs(){ return window.EJS_emulator || null; }
 const BTN_INDEX = { b:0, select:2, start:3, up:4, down:5, left:6, right:7, a:8, l:10, r:11 };
 const KEYMAP = {
@@ -786,11 +722,8 @@ btnSave.addEventListener("click", async function(){
     const st = await e.gameManager.getState();
     await dbPut("states", currentGameKey, st);
     await syncSramToLocal();
-    showToast("Partita Salvata ✓");
     closeMenu();
-  } catch(err){
-    showToast("Errore Salvataggio!");
-  }
+  } catch(err){}
 });
 
 btnLoad.addEventListener("click", async function(){
@@ -799,28 +732,10 @@ btnLoad.addEventListener("click", async function(){
   if(!e || !e.gameManager) return;
   try {
     const savedBytes = await dbGet("states", currentGameKey);
-    if(!savedBytes){
-      showToast("Nessun salvataggio trovato");
-      return;
-    }
+    if(!savedBytes) return;
     await e.gameManager.loadState(savedBytes);
-    showToast("Partita Caricata ✓");
     closeMenu();
-  } catch(err){
-    showToast("Errore Caricamento!");
-  }
-});
-
-btnFull.addEventListener("click", function(){
-  haptic(14);
-  const docEl = document.documentElement;
-  const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen;
-  if(document.fullscreenElement || document.webkitFullscreenElement){
-    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-  } else if(req){
-    req.call(docEl);
-  }
-  closeMenu();
+  } catch(err){}
 });
 
 function resizeCanvas(){
@@ -835,7 +750,6 @@ window.addEventListener("orientationchange", function(){
   releaseAllInputs();
   setTimeout(resizeCanvas, 150);
 });
-document.addEventListener("fullscreenchange", resizeCanvas);
 document.addEventListener("contextmenu", function(e){ if(e.target.closest("#controller")) e.preventDefault(); });
 document.addEventListener("touchmove", function(e){
   if(romLoaded && !e.target.closest(".menu-panel") && e.cancelable) e.preventDefault();
