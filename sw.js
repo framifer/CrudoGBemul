@@ -30,8 +30,16 @@ self.addEventListener("install", (e) => {
   );
 });
 
+// Prende il controllo immediato dei client senza attendere il riavvio della pagina
 self.addEventListener("activate", (e) => {
-  e.waitUntil(self.clients.claim());
+  e.waitUntil(
+    self.clients.claim().then(() => {
+      // Invia un messaggio alla pagina per notificare che il SW è attivo e controlla l'app
+      return self.clients.matchAll().then(clients => {
+        clients.forEach(client => client.postMessage({ type: "SW_ACTIVATED" }));
+      });
+    })
+  );
 });
 
 // Aggiunge gli header di isolamento per consentire SharedArrayBuffer (GBA veloce)
