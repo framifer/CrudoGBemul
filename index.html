@@ -236,6 +236,15 @@ const EJS_CDN = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/"
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      // Ascolta il messaggio di attivazione dal SW per ricaricare una volta sola di sicurezza
+      navigator.serviceWorker.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'SW_ACTIVATED') {
+          if (!window.crossOriginIsolated) {
+            window.location.reload();
+          }
+        }
+      });
+      // Fallback: se il SW controlla già ma non siamo isolati, ricarichiamo una volta
       if (!window.crossOriginIsolated && navigator.serviceWorker.controller) {
         window.location.reload();
       }
